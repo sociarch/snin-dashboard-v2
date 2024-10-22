@@ -6,34 +6,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import * as d3 from "d3";
-import { pollData } from "./pollData";
+import { pollData, PollDataItem } from "./pollData";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Dashboard() {
-    const [selectedPoll, setSelectedPoll] = useState(null);
+    const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [filteredData, setFilteredData] = useState(pollData);
-    const chartRef = useRef(null);
-    const itemsPerPage = 10;
+    const [filteredData, setFilteredData] = useState<PollDataItem[]>(pollData);
+    const chartRef = useRef<HTMLDivElement | null>(null);
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentPolls = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-    const handleRowClick = (poll) => {
+    const handleRowClick = (poll: PollDataItem) => {
         setSelectedPoll(poll);
     };
 
-    const handleSearch = (event) => {
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const searchTerm = event.target.value.toLowerCase();
         setSearchTerm(searchTerm);
-        const filtered = pollData.filter((poll) => poll.caption.toLowerCase().includes(searchTerm));
+        const filtered = pollData.filter((poll) => 
+            poll.caption.toLowerCase().includes(searchTerm) ||
+            poll.option1.toLowerCase().includes(searchTerm) ||
+            poll.option2.toLowerCase().includes(searchTerm) ||
+            poll.resp_option1.toString().includes(searchTerm) ||
+            poll.resp_option2.toString().includes(searchTerm)
+        );
         setFilteredData(filtered);
-        setCurrentPage(1);
     };
 
-    const createChart = (poll) => {
+    const createChart = (poll: PollDataItem) => {
         if (!chartRef.current) return;
 
         const chartContainer = chartRef.current;
@@ -110,7 +109,7 @@ export function Dashboard() {
             .text(`p ${pValue > 0.05 ? ">" : "<"} ${pValue.toFixed(2)} (n=${total})`);
     };
 
-    const calculatePValue = (data) => {
+    const calculatePValue = (data: { value: number }[]) => {
         const n = data.reduce((acc, d) => acc + d.value, 0);
         const p1 = data[0].value / n;
         const p2 = data[1].value / n;
@@ -128,72 +127,16 @@ export function Dashboard() {
         }
     }, [selectedPoll]);
 
-    const renderPaginationButtons = () => {
-        const buttons = [];
-        const showEllipsis = totalPages > 7;
-        const showFirstLastButtons = totalPages > 2;
-
-        if (showFirstLastButtons) {
-            buttons.push(
-                <Button key="first" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
-                    First
-                </Button>
-            );
-        }
-
-        buttons.push(
-            <Button key="prev" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-                Previous
-            </Button>
-        );
-
-        if (showEllipsis) {
-            if (currentPage > 3) {
-                buttons.push(<span key="ellipsis1">...</span>);
-            }
-
-            for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
-                buttons.push(
-                    <Button key={i} onClick={() => setCurrentPage(i)} className={currentPage === i ? "bg-blue-500" : "bg-gray-200"}>
-                        {i}
-                    </Button>
-                );
-            }
-
-            if (currentPage < totalPages - 2) {
-                buttons.push(<span key="ellipsis2">...</span>);
-            }
-        } else {
-            for (let i = 1; i <= totalPages; i++) {
-                buttons.push(
-                    <Button key={i} onClick={() => setCurrentPage(i)} className={currentPage === i ? "bg-blue-500" : "bg-gray-200"}>
-                        {i}
-                    </Button>
-                );
-            }
-        }
-
-        buttons.push(
-            <Button key="next" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-                Next
-            </Button>
-        );
-
-        if (showFirstLastButtons) {
-            buttons.push(
-                <Button key="last" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
-                    Last
-                </Button>
-            );
-        }
-
-        return buttons;
+    const handleButtonClick = (buttonId: string) => {
+        console.log(`Button ${buttonId} clicked`);
+        // Placeholder for future functionality
     };
 
     return (
         <div className="flex flex-col h-screen">
-            <div className="flex-none p-4">
+            <div className="flex-none p-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Poll Results Dashboard</h1>
+                <ThemeToggle />
             </div>
             <div className="flex-grow overflow-hidden p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
@@ -206,40 +149,51 @@ export function Dashboard() {
                             <div ref={chartRef} className="w-full h-full"></div>
                         </CardContent>
                     </Card>
-                    <Card className="flex flex-col">
+
+                    <Card className="flex flex-col overflow-hidden">
                         <CardHeader>
                             <CardTitle>Poll Data</CardTitle>
                             <CardDescription>Click a row to update the chart</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow overflow-auto">
+                        <CardContent className="flex flex-col flex-grow overflow-hidden">
                             <Input placeholder="Search polls..." value={searchTerm} onChange={handleSearch} className="mb-4" />
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Question</TableHead>
-                                        <TableHead>Option 1</TableHead>
-                                        <TableHead>Option 2</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {currentPolls.map((poll) => (
-                                        <TableRow key={poll.post_id} onClick={() => handleRowClick(poll)} className="cursor-pointer hover:bg-gray-100">
-                                            <TableCell>{poll.caption}</TableCell>
-                                            <TableCell>
-                                                {poll.option1} ({poll.resp_option1})
-                                            </TableCell>
-                                            <TableCell>
-                                                {poll.option2} ({poll.resp_option2})
-                                            </TableCell>
+                            <div className="overflow-auto flex-grow">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Question</TableHead>
+                                            <TableHead>Option 1</TableHead>
+                                            <TableHead>Option 2</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredData.map((poll) => (
+                                            <TableRow key={poll.post_id} onClick={() => handleRowClick(poll)} className="cursor-pointer hover:bg-gray-100">
+                                                <TableCell>{poll.caption}</TableCell>
+                                                <TableCell>
+                                                    {poll.option1} ({poll.resp_option1})
+                                                </TableCell>
+                                                <TableCell>
+                                                    {poll.option2} ({poll.resp_option2})
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
-            <div className="flex-none p-4 flex justify-center items-center space-x-2">{renderPaginationButtons()}</div>
+            <div className="flex-none p-4">
+                <div className="flex justify-center space-x-4">
+                    <Button onClick={() => handleButtonClick("function1")}>Function 1</Button>
+                    <Button onClick={() => handleButtonClick("function2")}>Function 2</Button>
+                    <Button onClick={() => handleButtonClick("function3")}>Function 3</Button>
+                    <Button onClick={() => handleButtonClick("function4")}>Function 4</Button>
+                    <Button onClick={() => handleButtonClick("function5")}>Function 5</Button>
+                </div>
+            </div>
         </div>
     );
 }

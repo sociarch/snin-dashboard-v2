@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Inter } from 'next/font/google'
+import { Inter, Roboto, Libre_Baskerville } from 'next/font/google'
 import { ThemeProvider } from "@/components/theme-provider"
 
 const geistSans = localFont({
@@ -16,6 +16,8 @@ const geistMono = localFont({
 });
 
 const inter = Inter({ subsets: ['latin'] })
+const roboto = Roboto({ weight: ['400', '700'], subsets: ['latin'] })
+const libreBaskerville = Libre_Baskerville({ weight: ['400', '700'], subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -30,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body>
+      <body className={`${inter.className} ${roboto.className} ${libreBaskerville.className}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

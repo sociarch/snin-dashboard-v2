@@ -39,74 +39,110 @@ export function Dashboard() {
         d3.select(chartContainer).selectAll("*").remove();
 
         const width = chartContainer.clientWidth;
-        const height = Math.min(width / 2, 250);
-        const radius = Math.min(width, height * 2) / 2;
+        const height = chartContainer.clientHeight;
+        const radius = Math.min(width, height) / 2 * 0.8;
 
-        const svg = d3
-            .select(chartContainer)
+        const svg = d3.select(chartContainer)
             .append("svg")
             .attr("width", width)
             .attr("height", height)
-            .style("background-color", "black")
             .append("g")
-            .attr("transform", `translate(${width / 2}, ${height})`);
+            .attr("transform", `translate(${width / 2},${height / 2})`);
 
-        const arc = d3
-            .arc()
+        const arc = d3.arc<d3.PieArcDatum<any>>()
             .innerRadius(radius * 0.6)
             .outerRadius(radius);
 
-        const pie = d3
-            .pie()
+        const labelArc = d3.arc<d3.PieArcDatum<any>>()
+            .innerRadius(radius * 1.1)
+            .outerRadius(radius * 1.1);
+
+        const pie = d3.pie<any>()
             .sort(null)
-            .value((d) => d.value)
+            .value(d => d.value)
             .startAngle(-Math.PI / 2)
             .endAngle(Math.PI / 2);
 
         const data = [
             { label: poll.option1, value: parseInt(poll.resp_option1), color: "#ffd700" },
-            { label: poll.option2, value: parseInt(poll.resp_option2), color: "#FA8072" },
+            { label: poll.option2, value: parseInt(poll.resp_option2), color: "#FA8072" }
         ];
 
-        const arcs = svg.selectAll(".arc").data(pie(data)).enter().append("g").attr("class", "arc");
+        const total = data.reduce((acc, d) => acc + d.value, 0);
+
+        const arcs = svg.selectAll(".arc")
+            .data(pie(data))
+            .enter().append("g")
+            .attr("class", "arc");
 
         arcs.append("path")
             .attr("d", arc)
-            .style("fill", (d) => d.data.color)
+            .style("fill", d => d.data.color)
             .transition()
             .duration(1000)
-            .attrTween("d", function (d) {
+            .attrTween("d", function(d) {
                 const interpolate = d3.interpolate({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }, d);
-                return function (t) {
+                return function(t) {
                     return arc(interpolate(t));
                 };
             });
 
-        const total = data.reduce((acc, d) => acc + d.value, 0);
-
         // Add percentage labels
         arcs.append("text")
-            .attr("transform", (d) => `translate(${arc.centroid(d)})`)
+            .attr("transform", d => `translate(${labelArc.centroid(d)})`)
             .attr("dy", ".35em")
             .style("text-anchor", "middle")
-            .style("fill", "white")
-            .style("font-size", "16px")
+            .style("fill", d => d.data.color)
+            .style("font-family", "'Libre Baskerville', serif")
+            .style("font-size", "28px")
+            .style("font-weight", "bold")
             .style("opacity", 0)
             .transition()
             .delay(1000)
             .duration(500)
             .style("opacity", 1)
-            .text((d) => `${Math.round((d.data.value / total) * 100)}%`);
+            .text(d => `${Math.round((d.data.value / total) * 100)}%`);
+
+        // Add option labels
+        arcs.append("text")
+            .attr("transform", d => {
+                const [x, y] = arc.centroid(d);
+                const angle = (d.startAngle + d.endAngle) / 2;
+                const radius = arc.outerRadius()(d) * 0.6;
+                return `translate(${radius * Math.cos(angle - Math.PI / 2)},${radius * Math.sin(angle - Math.PI / 2)})`;
+            })
+            .attr("dy", ".35em")
+            .style("text-anchor", "middle")
+            .style("fill", "white")
+            .style("font-family", "'Roboto', sans-serif")
+            .style("font-size", "16px")
+            .text(d => d.data.label);
 
         // Add p-value
         const pValue = calculatePValue(data);
         svg.append("text")
             .attr("x", 0)
-            .attr("y", height - 10)
+            .attr("y", height / 2 - 20)
             .attr("text-anchor", "middle")
             .style("fill", "white")
-            .style("font-size", "12px")
-            .text(`p ${pValue > 0.05 ? ">" : "<"} ${pValue.toFixed(2)} (n=${total})`);
+            .style("font-family", "'Roboto', sans-serif")
+            .style("font-size", "14px")
+            .text(`p < ${pValue.toFixed(2)} (n=${total})`);
+
+        // Add subtitle
+        svg.append("text")
+            .attr("x", 0)
+            .attr("y", height / 2 - 50)
+            .attr("text-anchor", "middle")
+            .style("fill", "white")
+            .style("font-family", "'Libre Baskerville', serif")
+            .style("font-size", "18px")
+            .style("opacity", 0)
+            .transition()
+            .delay(1500)
+            .duration(500)
+            .style("opacity", 1)
+            .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label));
     };
 
     const calculatePValue = (data: { value: number }[]) => {
@@ -140,7 +176,7 @@ export function Dashboard() {
             </div>
             <div className="flex-grow overflow-hidden p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                    <Card className="flex flex-col">
+                    <Card className="flex flex-col bg-black text-white">
                         <CardHeader>
                             <CardTitle>Poll Results Chart</CardTitle>
                             <CardDescription>{selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}</CardDescription>

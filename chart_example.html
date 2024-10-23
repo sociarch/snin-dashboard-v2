@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<!-- Update instructions: -->
+<!-- https://www.loom.com/share/53709214524c4c2abbae4fabe071054d?sid=67ab58b9-d309-4e02-b52d-5a2047131c07 -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>SnapInput Results</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap"
+        rel="stylesheet" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3TXCQD4CD9"></script>
+    <!-- Google Tag Manager -->
+    <script>
+        ; (function (w, d, s, l, i) {
+            w[l] = w[l] || []
+            w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' })
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s),
+                dl = l != 'dataLayer' ? '&l=' + l : ''
+            j.async = true
+            j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl
+            f.parentNode.insertBefore(j, f)
+        })(window, document, 'script', 'dataLayer', 'GTM-PXZXKPL9')
+    </script>
+    <!-- End Google Tag Manager -->
+    <script src="https://cdn.logr-ingest.com/LogRocket.min.js" crossorigin="anonymous"></script>
+    <script>
+        window.LogRocket && window.LogRocket.init('8mbyci/snapinput')
+    </script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Libre Baskerville', serif;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            /* Ensure particles are within the viewport */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* height: 100vh; Full viewport height for centering */
+        }
+
+        .container {
+            max-width: 500px;
+            /* Increased for more space */
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            /* Ensure content is above particles */
+            min-height: 100vh;
+            /* Increased for more space */
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            /* Ensure particles are behind the content */
+        }
+
+        .chartContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+            /* Increased for more space */
+            position: relative;
+            margin-top: 40px;
+        }
+
+        .labelsContainer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 5px auto 40px auto;
+            /* Center the container and adjust top/bottom margins */
+        }
+
+        .label {
+            font-size: 1.5em;
+            font-family: 'Roboto', sans-serif;
+            color: white;
+            /* Ensure it stands out on the black background */
+            font-weight: bold;
+            opacity: 0;
+            /* Initially hidden */
+        }
+
+        .label.yellow {
+            color: #ffd700;
+            /* Yellow color for the left label */
+        }
+
+        .label.salmon {
+            color: #fa8072;
+            /* Salmon color for the right label */
+        }
+
+        h1 {
+            font-size: 2em;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            opacity: 0;
+            /* Initially hidden */
+        }
+
+        .footer {
+            position: relative;
+            margin-top: 40px;
+            opacity: 0;
+            /* Initially hidden */
+        }
+
+        .p-value {
+            font-size: 0.7em;
+            /* Smaller font size for p-value line */
+            text-align: right;
+        }
+
+        .link {
+            font-size: 1em;
+            /* Smaller font size for the link */
+            text-align: left;
+            position: absolute;
+            bottom: 0;
+            /* Align to the bottom */
+            left: 0;
+            /* Align to the left */
+            margin-left: 10px;
+            /* Add some margin for spacing */
+            color: white;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+            /* Optional: underline on hover */
+        }
+
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 8px;
+            background: white;
+            color: black;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+        }
+
+        textPath {
+            font-size: 1.25em;
+        }
+
+        @media only screen and (max-width: 767px) {
+            .container {
+                width: 90%;
+                /* Use 90% of the viewport width */
+            }
+
+            #page-title {
+                font-size: 1.5em;
+                /* Adjust the font size of the page title to 1.5em on mobile */
+            }
+
+            #page-subtitle {
+                font-size: 1.25em;
+                /* Adjust the font size of the page subtitle to 1.25em on mobile */
+            }
+
+            textPath {
+                font-size: 1em;
+            }
+        }
+    </style>
+    <!-- Open Graph Meta Tags with IDs -->
+    <meta property="og:title" id="og-title" content="" />
+    <meta property="og:type" id="og-type" content="website" />
+    <meta property="og:url" id="og-url" content="" />
+    <meta property="og:image" id="og-image" content="" />
+    <meta property="og:description" id="og-description" content="" />
+    <meta property="og:site_name" id="og-site-name" content="SnapInput" />
+    <meta property="og:locale" id="og-locale" content="en_US" />
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PXZXKPL9" height="0" width="0"
+            style="display: none; visibility: hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="particles-js"></div>
+    <div class="container">
+        <h1 id="page-title"></h1>
+        <div class="chartContainer"></div>
+        <div class="labelsContainer">
+            <div class="label yellow" id="label1"></div>
+            <div class="label salmon" id="label2"></div>
+        </div>
+        <h2 id="page-subtitle"></h2>
+        <div class="footer">
+            <p class="p-value" id="p-value"></p>
+            <a href="https://snapinput.com" class="link">snapinput.com</a>
+        </div>
+        <div class="tooltip" style="opacity: 0"></div>
+        <script>
+            // Constants for easy updates
+            const PAGE_TITLE = 'One App to Manage Many Bank Accounts or One Bank for the Rest of Your Life?'
+            const PAGE_SUBTITLE = 'Most people prefer one app to manage many bank accounts'
+            const LABELS = ['One App', 'One Bank']
+            const VALUES = [452, 315]
+            const COLORS = ['#ffd700', '#FA8072']
+            const BASE_URL = 'https://viz.snapinput.com'
+            const PAGE_URL = `${BASE_URL}/donut-chart`
+            const IMAGE_URL = `${BASE_URL}/images/donut-chart-thumbnail.jpg`
+
+            // Update the HTML page title
+            document.title = PAGE_TITLE
+
+            // Update the page title and subtitle
+            document.getElementById('page-title').innerText = PAGE_TITLE
+            document.getElementById('page-subtitle').innerText = PAGE_SUBTITLE
+
+            // Update Open Graph Meta Tags
+            document.getElementById('og-title').content = PAGE_TITLE
+            document.getElementById('og-url').content = PAGE_URL
+            document.getElementById('og-image').content = IMAGE_URL
+            document.getElementById('og-description').content = PAGE_SUBTITLE
+
+            // Prepare data
+            const data = LABELS.map((label, index) => ({
+                label,
+                value: VALUES[index],
+                color: COLORS[index],
+            }))
+
+            const total = data.reduce((acc, d) => acc + d.value, 0)
+
+            const chartContainer = document.querySelector('.chartContainer')
+            const width = chartContainer.clientWidth // Increased for more space
+            const height = Math.min(width / 2, 250) // Maintain proportion, but limit the height.
+            const radius = Math.min(width, height * 2) / 2
+
+            const svg = d3
+                .select('.chartContainer')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .style('background-color', 'black')
+                .append('g')
+                .attr('transform', `translate(${width / 2}, ${height})`)
+
+            const arc = d3
+                .arc()
+                .innerRadius(radius * 0.6)
+                .outerRadius(radius)
+
+            const pie = d3
+                .pie()
+                .sort(null)
+                .value((d) => d.value)
+                .startAngle(-Math.PI / 2)
+                .endAngle(Math.PI / 2)
+
+            const tooltip = d3.select('.tooltip')
+
+            const arcs = svg.selectAll('.arc').data(pie(data)).enter().append('g').attr('class', 'arc')
+
+            arcs.append('path')
+                .attr('d', arc)
+                .style('fill', (d) => d.data.color)
+                .each(function (d) {
+                    this._current = d
+                }) // store the initial angles
+                .transition()
+                .duration(1000)
+                .attrTween('d', function (d) {
+                    const interpolate = d3.interpolate({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }, d)
+                    return function (t) {
+                        return arc(interpolate(t))
+                    }
+                })
+
+            arcs.on('mouseover', function (event, d) {
+                d3.select(this).select('path').transition()
+                tooltip.transition().duration(200).style('opacity', 0.9)
+                tooltip
+                    .html(d.data.label + '<br>' + d.data.value + ' votes')
+                    .style('left', event.pageX + 'px')
+                    .style('top', event.pageY - 28 + 'px')
+            }).on('mouseout', function (d) {
+                d3.select(this).select('path').transition()
+                tooltip.transition().duration(500).style('opacity', 0)
+            })
+
+            const labelArc = d3
+                .arc()
+                .innerRadius(radius * 0.85)
+                .outerRadius(radius * 0.85)
+
+            arcs.append('path')
+                .attr('class', 'label-path')
+                .attr('id', (d, i) => `label-path-${i}`)
+                .attr('d', labelArc)
+                .style('fill', 'none')
+                .style('stroke', 'none')
+
+            arcs.append('text')
+                .append('textPath')
+                .attr('xlink:href', (d, i) => `#label-path-${i}`)
+                .attr('startOffset', (d, i) => (i === 0 ? '3%' : '47%')) // Adjust the position of the labels !!!
+                .text((d) => `${d.data.label}`)
+                .style('text-anchor', (d, i) => (i === 0 ? 'start' : 'end'))
+                // .style('font-size', '1.25em') // Set font-size for labels
+                .style('font-family', 'Roboto') // Set font-family to Roboto for labels
+                .style('fill', 'black') // Set text color to black
+                .attr('dy', '1.5em')
+                .style('opacity', 0)
+                .transition()
+                .delay(1000)
+                .duration(500)
+                .style('opacity', 1)
+
+            // Set percentage labels in the divs with delayed transition
+            setTimeout(() => {
+                d3.select('#label1')
+                    .transition()
+                    .duration(500)
+                    .style('opacity', 1)
+                    .text(`${Math.round((data[0].value / total) * 100)}%`)
+                d3.select('#label2')
+                    .transition()
+                    .duration(500)
+                    .style('opacity', 1)
+                    .text(`${Math.round((data[1].value / total) * 100)}%`)
+            }, 1000)
+
+            // Fade in the h2 element after the percentage labels
+            setTimeout(() => {
+                d3.select('#page-subtitle').transition().duration(500).style('opacity', 1)
+            }, 2000)
+
+            // Fade in the footer after the h2 element
+            setTimeout(() => {
+                d3.select('.footer').transition().duration(500).style('opacity', 1)
+            }, 2500)
+
+            // Function to calculate p-value (simplified)
+            function calculatePValue(data) {
+                const n = total // sample size based on total value
+                const p1 = data[0].value / total
+                const p2 = data[1].value / total
+                const p = (data[0].value + data[1].value) / (2 * n)
+
+                const z = (p1 - p2) / Math.sqrt(p * (1 - p) * (1 / n + 1 / n))
+                const pValue = Math.exp(-0.717 * z - 0.416 * z * z) // Approximation for p-value from z
+
+                return pValue // Return the p-value
+            }
+
+            // Calculate and display the p-value
+            const pValue = calculatePValue(data)
+            const pValueText = pValue > 0.05 ? 'p > 0.05' : `p < ${pValue.toFixed(2)}`
+            document.getElementById('p-value').innerText = `${pValueText} (n=${total})`
+        </script>
+    </div>
+</body>
+
+</html>

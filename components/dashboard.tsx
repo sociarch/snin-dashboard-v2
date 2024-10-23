@@ -168,7 +168,11 @@ export function Dashboard() {
                                     </TableHeader>
                                     <TableBody>
                                         {filteredData.map((poll) => (
-                                            <TableRow key={poll.post_id} onClick={() => handleRowClick(poll)} className="cursor-pointer hover:bg-gray-100">
+                                            <TableRow 
+                                                key={poll.post_id} 
+                                                onClick={() => handleRowClick(poll)} 
+                                                className="cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            >
                                                 <TableCell>{poll.caption}</TableCell>
                                                 <TableCell>
                                                     {poll.option1} ({poll.resp_option1})

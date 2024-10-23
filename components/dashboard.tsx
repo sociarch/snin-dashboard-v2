@@ -40,14 +40,26 @@ export function Dashboard() {
 
         const width = chartContainer.clientWidth;
         const height = chartContainer.clientHeight;
-        const radius = Math.min(width, height) / 2 * 0.8;
+        const radius = Math.min(width, height) / 2 * 0.7;
 
         const svg = d3.select(chartContainer)
             .append("svg")
             .attr("width", width)
             .attr("height", height)
+            .style("background-color", "black")
             .append("g")
             .attr("transform", `translate(${width / 2},${height / 2})`);
+
+        // Add title
+        svg.append("text")
+            .attr("x", 0)
+            .attr("y", -height / 2 + 30)
+            .attr("text-anchor", "middle")
+            .style("fill", "white")
+            .style("font-family", "'Libre Baskerville', serif")
+            .style("font-size", "24px")
+            .style("font-weight", "bold")
+            .text(poll.caption);
 
         const arc = d3.arc<d3.PieArcDatum<any>>()
             .innerRadius(radius * 0.6)
@@ -87,14 +99,19 @@ export function Dashboard() {
                 };
             });
 
-        // Add percentage labels
+        // Add percentage labels at the ends of the arc
         arcs.append("text")
-            .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+            .attr("transform", d => {
+                const [x, y] = arc.centroid(d);
+                const angle = (d.startAngle + d.endAngle) / 2;
+                const radius = arc.outerRadius()(d) * 1.2;
+                return `translate(${radius * Math.cos(angle - Math.PI / 2)},${radius * Math.sin(angle - Math.PI / 2)})`;
+            })
             .attr("dy", ".35em")
             .style("text-anchor", "middle")
             .style("fill", d => d.data.color)
             .style("font-family", "'Libre Baskerville', serif")
-            .style("font-size", "28px")
+            .style("font-size", "32px")
             .style("font-weight", "bold")
             .style("opacity", 0)
             .transition()
@@ -103,7 +120,7 @@ export function Dashboard() {
             .style("opacity", 1)
             .text(d => `${Math.round((d.data.value / total) * 100)}%`);
 
-        // Add option labels
+        // Add option labels inside the arc
         arcs.append("text")
             .attr("transform", d => {
                 const [x, y] = arc.centroid(d);
@@ -118,21 +135,10 @@ export function Dashboard() {
             .style("font-size", "16px")
             .text(d => d.data.label);
 
-        // Add p-value
-        const pValue = calculatePValue(data);
-        svg.append("text")
-            .attr("x", 0)
-            .attr("y", height / 2 - 20)
-            .attr("text-anchor", "middle")
-            .style("fill", "white")
-            .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "14px")
-            .text(`p < ${pValue.toFixed(2)} (n=${total})`);
-
         // Add subtitle
         svg.append("text")
             .attr("x", 0)
-            .attr("y", height / 2 - 50)
+            .attr("y", height / 2 - 40)
             .attr("text-anchor", "middle")
             .style("fill", "white")
             .style("font-family", "'Libre Baskerville', serif")
@@ -143,6 +149,26 @@ export function Dashboard() {
             .duration(500)
             .style("opacity", 1)
             .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label));
+
+        // Add p-value
+        const pValue = calculatePValue(data);
+        svg.append("text")
+            .attr("x", width / 2 - 10)
+            .attr("y", height / 2 - 10)
+            .attr("text-anchor", "end")
+            .style("fill", "white")
+            .style("font-family", "'Roboto', sans-serif")
+            .style("font-size", "12px")
+            .text(`p < ${pValue.toFixed(2)} (n=${total})`);
+
+        // Add snapinput.com text
+        svg.append("text")
+            .attr("x", -width / 2 + 10)
+            .attr("y", height / 2 - 10)
+            .style("fill", "white")
+            .style("font-family", "'Roboto', sans-serif")
+            .style("font-size", "12px")
+            .text("snapinput.com");
     };
 
     const calculatePValue = (data: { value: number }[]) => {
@@ -177,11 +203,12 @@ export function Dashboard() {
             <div className="flex-grow overflow-hidden p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
                     <Card className="flex flex-col bg-black text-white">
-                        <CardHeader>
-                            <CardTitle>Poll Results Chart</CardTitle>
-                            <CardDescription>{selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}</CardDescription>
+                        <CardHeader className="pb-0">
+                            <CardTitle className="text-2xl font-bold text-center font-serif">
+                                {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="flex-grow">
+                        <CardContent className="flex-grow h-full pt-0">
                             <div ref={chartRef} className="w-full h-full"></div>
                         </CardContent>
                     </Card>

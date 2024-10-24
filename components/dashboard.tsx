@@ -73,8 +73,8 @@ export function Dashboard() {
 
         const labelArc = d3
             .arc<d3.PieArcDatum<any>>()
-            .innerRadius(radius * 1.1)
-            .outerRadius(radius * 1.1);
+            .innerRadius(radius * 0.85)
+            .outerRadius(radius * 0.85);
 
         // Define pie layout
         const pie = d3
@@ -106,6 +106,31 @@ export function Dashboard() {
                     return arc(interpolate(t));
                 };
             });
+
+        // Add label paths
+        arcs.append('path')
+            .attr('class', 'label-path')
+            .attr('id', (d, i) => `label-path-${i}`)
+            .attr('d', labelArc)
+            .style('fill', 'none')
+            .style('stroke', 'none');
+
+        // Add labels
+        arcs.append('text')
+            .append('textPath')
+            .attr('xlink:href', (d, i) => `#label-path-${i}`)
+            .attr('startOffset', (d, i) => (i === 0 ? '3%' : '47%'))
+            .text((d) => `${d.data.label}`)
+            .style('text-anchor', (d, i) => (i === 0 ? 'start' : 'end'))
+            .style('font-family', "'Roboto', sans-serif")
+            .style('font-size', '14px')
+            .style('fill', 'white')
+            .attr('dy', '0.35em')
+            .style('opacity', 0)
+            .transition()
+            .delay(1000)
+            .duration(500)
+            .style('opacity', 1);
 
         // Create a container for the bottom text elements
         const bottomTextContainer = container.append("div")

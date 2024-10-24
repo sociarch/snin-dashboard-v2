@@ -41,13 +41,14 @@ export function Dashboard() {
     const [showRightColumnContent, setShowRightColumnContent] = useState(true);
     const [isTransitioning, setIsTransitioning] = useState(false);
 
-    const [reportContent, setReportContent] = useState("");
+    const [reportContent, setReportContent] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState("");
 
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
         if (poll !== selectedPoll) {
             setIsLoading(true);
+            setReportContent(null); // Reset the report content when a new row is selected
 
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
@@ -56,6 +57,7 @@ export function Dashboard() {
             // Increase the delay before updating the poll
             timeoutRef.current = setTimeout(() => {
                 setSelectedPoll(poll);
+                setShowRightColumnContent(true); // Show the survey table when a new poll is selected
                 // Keep isLoading true to allow for chart creation
             }, 500); // Increased from 300ms to 500ms
         }
@@ -236,7 +238,7 @@ export function Dashboard() {
     const generateReport = async () => {
         if (!selectedPoll) {
             showAlert("Please select a question before generating a report", "error");
-            return false;
+            return;
         }
 
         let promptIntro =
@@ -286,13 +288,8 @@ export function Dashboard() {
             const responseContent = data.response;
             setReportContent(responseContent);
 
-            showReportModal(
-                fileName,
-                responseContent +
-                    "\n\n\n----------\nThis report was created by an artificial intelligence language model. While we strive for accuracy and quality, please note that the information and calculations provided may not be entirely error-free or up-to-date. We recommend independently verifying the content and consulting with professionals for specific advice or information. We do not assume any responsibility or liability for the use or interpretation of this content.\n\n- SnapInput"
-            );
-
-            return responseContent;
+            // Switch to the report view
+            setShowRightColumnContent(false);
         } catch (err) {
             console.error(err);
             showAlert("Error generating report", "error");
@@ -468,7 +465,7 @@ export function Dashboard() {
 
                     <Card id="data-table-card" className="flex flex-col h-full">
                         <CardHeader>
-                            <CardTitle>{showRightColumnContent ? "Your Micro Surveys" : "MyFunctionTitle"}</CardTitle>
+                            <CardTitle>{showRightColumnContent ? "Your Micro Surveys" : "Generated Report"}</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
                             <div
@@ -511,13 +508,24 @@ export function Dashboard() {
                                 </div>
                             </div>
                             <div
-                                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                                className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
                                     !showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
                                 }`}
                             >
-                                <Button onClick={generateReport} className="text-2xl font-bold">
-                                    Generate Report
-                                </Button>
+                                {reportContent ? (
+                                    <div className="p-4 overflow-auto">
+                                        <div className="whitespace-pre-wrap">{reportContent}</div>
+                                        <div className="mt-4 text-sm text-gray-500">
+                                            This report was created by an artificial intelligence language model. While we strive for accuracy and quality, please note that the information and calculations provided may not be entirely error-free or up-to-date. We recommend independently verifying the content and consulting with professionals for specific advice or information. We do not assume any responsibility or liability for the use or interpretation of this content.
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <Button onClick={generateReport} className="text-2xl font-bold">
+                                            Generate Report
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -526,7 +534,7 @@ export function Dashboard() {
             <footer id="dashboard-footer" className="flex-none p-4">
                 <div id="button-container" className="flex justify-center space-x-4">
                     <Button id="function1-button" onClick={() => handleButtonClick("function1")}>
-                        {showRightColumnContent ? "Hide Content" : "Show Content"}
+                        {showRightColumnContent ? "View Report" : "Show Surveys"}
                     </Button>
                     <Button id="function2-button" onClick={() => handleButtonClick("function2")}>
                         Function 2

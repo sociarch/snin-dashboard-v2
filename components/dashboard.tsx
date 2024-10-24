@@ -9,6 +9,10 @@ import * as d3 from "d3";
 import { pollData, PollDataItem } from "./pollData";
 import { ThemeToggle } from "./theme-toggle";
 
+// Add these new imports
+import { jsPDF } from "jspdf";
+import { showAlert } from "@/lib/utils"; // You'll need to create this utility function
+
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
     console.log("Generating report...");
@@ -36,6 +40,9 @@ export function Dashboard() {
     // Add this new state variable
     const [showRightColumnContent, setShowRightColumnContent] = useState(true);
     const [isTransitioning, setIsTransitioning] = useState(false);
+
+    const [reportContent, setReportContent] = useState("");
+    const [pdfFileName, setPdfFileName] = useState("");
 
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
@@ -224,6 +231,167 @@ export function Dashboard() {
         } else {
             console.log(`Button ${buttonId} clicked`);
         }
+    };
+
+    const generateReport = async () => {
+        if (!selectedPoll) {
+            showAlert("Please select a question before generating a report", "error");
+            return false;
+        }
+
+        let promptIntro =
+            "You are a data scientist and analyst. You are analyzing data from a question asked to the general public. The question is in a 'Yes/No' or 'Either/Or' format only and is sponsored by a company. You are provided with a dataset containing the following fields: create_date,post_id,is_user_generated,is_sponsored,sponsor_id,caption,option1,option2,total_responses,resp_option1,pct_option1,resp_option2,pct_option2,count_like,count_comment,count_bookmark,count_skip. Question response data corresponding to the above fields: ";
+
+        let questionData = Object.values(selectedPoll).join(",");
+
+        let reportInstructions =
+            ". Please write a concise report in order of: 1. Analyze the data and numbers: Identify key trends and insights related to the sponsor's specific question. 2. Summary and Insight: Clearly summarize the results of the question. Highlight any statistically significant findings. 3. Suggest potential next steps: Formulate 2-3 follow-up questions in the 'Either/Or' format that could help the sponsor gather more specific information based on these initial results.";
+
+        let additionalGuidelines =
+            " Follow-up questions should not be open-ended. These questions should directly build upon the insights gained. Also, potential next steps could include, for example, 'Consider a new marketing campaign targeting X demographic. Include only if it is appropriate'. IMPORTANT: Ensure the data comes from the provided data above. Please NEVER include statements about the quality of the question and its engagement with (likes, comments, bookmarks, and skips). Please avoid commenting on the question's limited engagement or low response rate if possible.";
+
+        let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
+
+        console.log("Prompt for AI:", fullPrompt);
+
+        const fileName = `SnapInput Report: ${selectedPoll.option1} vs ${selectedPoll.option2} (${selectedPoll.post_id})`;
+        setPdfFileName(`SnapInput_report_${selectedPoll.option1}_${selectedPoll.option2}_${selectedPoll.post_id}.pdf`);
+
+        const options = {
+            method: "POST",
+            headers: {
+                accept: "application/json",
+                "content-type": "application/json",
+                Authorization: "Bearer 8d95a9a2f429b79f8c2464de290193b505d5b551b38c87294c45ffa3c5d50099",
+            },
+            body: JSON.stringify({
+                model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+                max_tokens: 2048,
+                messages: [
+                    {
+                        role: "system",
+                        content: fullPrompt,
+                    },
+                ],
+                temperature: 0.44,
+                repetition_penalty: 1.1,
+                top_p: 0.7,
+                top_k: 50,
+            }),
+        };
+
+        try {
+            const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
+            const data = await response.json();
+            const responseContent = data.response;
+            setReportContent(responseContent);
+
+            showReportModal(
+                fileName,
+                responseContent +
+                    "\n\n\n----------\nThis report was created by an artificial intelligence language model. While we strive for accuracy and quality, please note that the information and calculations provided may not be entirely error-free or up-to-date. We recommend independently verifying the content and consulting with professionals for specific advice or information. We do not assume any responsibility or liability for the use or interpretation of this content.\n\n- SnapInput"
+            );
+
+            return responseContent;
+        } catch (err) {
+            console.error(err);
+            showAlert("Error generating report", "error");
+        }
+    };
+
+    const formatText = (text) => {
+        const lines = text.split("\n");
+        let formattedLines = [];
+
+        for (let line of lines) {
+            if (line.startsWith("**") && line.endsWith("**")) {
+                formattedLines.push({
+                    text: line.slice(2, -2),
+                    isBold: true,
+                    isBullet: false,
+                });
+            } else if (line.startsWith("* ")) {
+                formattedLines.push({
+                    text: line.slice(2),
+                    isBold: false,
+                    isBullet: true,
+                });
+            } else {
+                formattedLines.push({
+                    text: line.replace(/\*/g, ""),
+                    isBold: false,
+                    isBullet: false,
+                });
+            }
+        }
+
+        return formattedLines;
+    };
+
+    const buildPDF = (text) => {
+        const pdf = new jsPDF("p", "mm", "a4");
+        const editedText =
+            text +
+            "\n\n\n----------\nThis report was created by an artificial intelligence language model. While we strive for accuracy and quality, please note that the information and calculations provided may not be entirely error-free or up-to-date. We recommend independently verifying the content and consulting with professionals for specific advice or information. We do not assume any responsibility or liability for the use or interpretation of this content.\n\n- SnapInput";
+        pdf.setFont("Courier");
+        pdf.setFontSize(11);
+        pdf.setTextColor("#000000");
+
+        const formattedLines = formatText(editedText);
+        const pageHeight = 247;
+        let y = 25;
+
+        for (let line of formattedLines) {
+            if (line.isBold) {
+                pdf.setFont("Courier", "bold");
+                pdf.setFontSize(13);
+            } else {
+                pdf.setFont("Courier", "normal");
+                pdf.setFontSize(11);
+            }
+
+            let splitLine = pdf.splitTextToSize(line.text, 180);
+
+            for (let part of splitLine) {
+                if (y > pageHeight) {
+                    y = 15;
+                    pdf.addPage();
+                }
+
+                if (line.isBullet) {
+                    pdf.circle(12, y - 2, 0.5, "F");
+                    pdf.text(part, 15, y);
+                } else {
+                    pdf.text(part, line.isBullet ? 15 : 10, y);
+                }
+
+                y += 7;
+            }
+
+            if (line.isBold) {
+                y += 3;
+            }
+        }
+
+        return pdf.output("dataurlstring");
+    };
+
+    const showReportModal = (title, content) => {
+        // Implement your modal logic here
+        console.log("Showing report modal:", title, content);
+    };
+
+    const copyReportToClipboard = async () => {
+        // Implement clipboard copy logic here
+        console.log("Copying report to clipboard:", reportContent);
+    };
+
+    const downloadReportPDF = async () => {
+        const doc = buildPDF(reportContent);
+        const link = document.createElement("a");
+        link.href = doc;
+        link.download = pdfFileName;
+        link.click();
     };
 
     return (

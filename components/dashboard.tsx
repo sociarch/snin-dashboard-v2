@@ -241,12 +241,12 @@ export function Dashboard() {
 
         let promptIntro =
             "You are a data scientist and analyst. You are analyzing data from a question asked to the general public. The question is in a 'Yes/No' or 'Either/Or' format only and is sponsored by a company. You are provided with a dataset containing the following fields: create_date,post_id,is_user_generated,is_sponsored,sponsor_id,caption,option1,option2,total_responses,resp_option1,pct_option1,resp_option2,pct_option2,count_like,count_comment,count_bookmark,count_skip. Question response data corresponding to the above fields: ";
-
+        
         let questionData = Object.values(selectedPoll).join(",");
-
+        
         let reportInstructions =
             ". Please write a concise report in order of: 1. Analyze the data and numbers: Identify key trends and insights related to the sponsor's specific question. 2. Summary and Insight: Clearly summarize the results of the question. Highlight any statistically significant findings. 3. Suggest potential next steps: Formulate 2-3 follow-up questions in the 'Either/Or' format that could help the sponsor gather more specific information based on these initial results.";
-
+        
         let additionalGuidelines =
             " Follow-up questions should not be open-ended. These questions should directly build upon the insights gained. Also, potential next steps could include, for example, 'Consider a new marketing campaign targeting X demographic. Include only if it is appropriate'. IMPORTANT: Ensure the data comes from the provided data above. Please NEVER include statements about the quality of the question and its engagement with (likes, comments, bookmarks, and skips). Please avoid commenting on the question's limited engagement or low response rate if possible.";
 

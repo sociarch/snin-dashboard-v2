@@ -14,7 +14,8 @@ export function Dashboard() {
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredData, setFilteredData] = useState<PollDataItem[]>(pollData);
-    const chartRef = useRef<HTMLDivElement | null>(null);
+    const chartContainerRef = useRef<HTMLDivElement>(null);
+    const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
 
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
@@ -37,35 +38,40 @@ export function Dashboard() {
         setFilteredData(filtered);
     };
 
+    // Function to update chart dimensions
+    const updateChartDimensions = () => {
+        if (chartContainerRef.current) {
+            const width = chartContainerRef.current.clientWidth;
+            const height = Math.min(width / 2, 250); // Maintain proportion, but limit the height
+            setChartDimensions({ width, height });
+        }
+    };
+
+    // Effect to handle window resize and initial dimension calculation
+    useEffect(() => {
+        updateChartDimensions();
+        window.addEventListener("resize", updateChartDimensions);
+        return () => window.removeEventListener("resize", updateChartDimensions);
+    }, []);
+
     // Function to create the D3 chart
     const createChart = (poll: PollDataItem) => {
-        if (!chartRef.current) return;
+        if (!chartContainerRef.current) return;
 
-        const chartContainer = chartRef.current;
-        d3.select(chartContainer).selectAll("*").remove(); // Clear existing chart
+        const { width, height } = chartDimensions;
+        const radius = Math.min(width, height * 2) / 2;
 
-        // Set up chart dimensions
-        const width = chartContainer.clientWidth;
-        const height = chartContainer.clientHeight;
-        const radius = (Math.min(width, height) / 2) * 0.8; // Increased radius slightly
+        d3.select(chartContainerRef.current).selectAll("*").remove(); // Clear existing chart
 
-        // Create a container for all elements
-        const container = d3.select(chartContainer)
-            .append("div")
-            .style("position", "relative")
-            .style("width", "100%")
-            .style("height", "100%");
-
-        // Create SVG element for the pie chart
-        const svg = container.append("svg")
+        const svg = d3
+            .select(chartContainerRef.current)
+            .append("svg")
             .attr("width", width)
-            .attr("height", height - 60) // Reduced height to make room for text below
-            .style("position", "absolute")
-            .style("top", "0")
+            .attr("height", height)
             .append("g")
-            .attr("transform", `translate(${width / 2},${(height - 60) / 2})`);
+            .attr("transform", `translate(${width / 2}, ${height})`);
 
-        // Define arc generators for the pie chart
+        // Define arc generators
         const arc = d3
             .arc<d3.PieArcDatum<any>>()
             .innerRadius(radius * 0.6)
@@ -108,68 +114,73 @@ export function Dashboard() {
             });
 
         // Add label paths
-        arcs.append('path')
-            .attr('class', 'label-path')
-            .attr('id', (d, i) => `label-path-${i}`)
-            .attr('d', labelArc)
-            .style('fill', 'none')
-            .style('stroke', 'none');
+        arcs.append("path")
+            .attr("class", "label-path")
+            .attr("id", (d, i) => `label-path-${i}`)
+            .attr("d", labelArc)
+            .style("fill", "none")
+            .style("stroke", "none");
 
         // Add labels
-        arcs.append('text')
-            .append('textPath')
-            .attr('xlink:href', (d, i) => `#label-path-${i}`)
-            .attr('startOffset', (d, i) => (i === 0 ? '3%' : '47%'))
+        arcs.append("text")
+            .append("textPath")
+            .attr("xlink:href", (d, i) => `#label-path-${i}`)
+            .attr("startOffset", (d, i) => (i === 0 ? "3%" : "47%"))
             .text((d) => `${d.data.label}`)
-            .style('text-anchor', (d, i) => (i === 0 ? 'start' : 'end'))
-            .style('font-family', "'Roboto', sans-serif")
-            .style('font-size', '0.875em') // Changed from 14px to 0.875em
-            .style('fill', 'white')
-            .attr('dy', '0.35em')
-            .style('opacity', 0)
+            .style("text-anchor", (d, i) => (i === 0 ? "start" : "end"))
+            .style("font-family", "'Roboto', sans-serif")
+            .style("font-size", "1.1em") // Increased from 0.875em to 1.1em
+            .style("fill", "black") // Changed from white to black
+            .attr("dy", "0.35em")
+            .style("opacity", 0)
             .transition()
             .delay(1000)
             .duration(500)
-            .style('opacity', 1);
+            .style("opacity", 1);
 
         // Create a container for the bottom text elements
-        const bottomTextContainer = container.append("div")
-            .style("position", "absolute")
-            .style("bottom", "0")
-            .style("left", "0")
-            .style("width", "100%")
-            .style("height", "60px")
-            .style("display", "flex")
-            .style("justify-content", "space-between")
-            .style("align-items", "center")
-            .style("padding", "0 10px");
+        // const bottomTextContainer = d3
+        //     .select(chartContainer)
+        //     .append("div")
+        //     .style("position", "absolute")
+        //     .style("bottom", "0")
+        //     .style("left", "0")
+        //     .style("width", "100%")
+        //     .style("height", "60px")
+        //     .style("display", "flex")
+        //     .style("justify-content", "space-between")
+        //     .style("align-items", "center")
+        //     .style("padding", "0 10px");
 
-        // Add snapinput.com text
-        bottomTextContainer.append("div")
-            .style("color", "white")
-            .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "0.75em") // Changed from 12px to 0.75em
-            .text("snapinput.com");
+        // // Add snapinput.com text
+        // bottomTextContainer
+        //     .append("div")
+        //     .style("color", "white")
+        //     .style("font-family", "'Roboto', sans-serif")
+        //     .style("font-size", "0.75em") // Changed from 12px to 0.75em
+        //     .text("snapinput.com");
 
-        // Add subtitle with the preferred option
-        bottomTextContainer.append("div")
-            .style("color", "white")
-            .style("font-family", "'Libre Baskerville', serif")
-            .style("font-size", "1em") // Changed from 16px to 1em
-            .style("text-align", "center")
-            .style("opacity", "0")
-            .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label))
-            .transition()
-            .delay(1500)
-            .duration(500)
-            .style("opacity", "1");
+        // // Add subtitle with the preferred option
+        // bottomTextContainer
+        //     .append("div")
+        //     .style("color", "white")
+        //     .style("font-family", "'Libre Baskerville', serif")
+        //     .style("font-size", "1em") // Changed from 16px to 1em
+        //     .style("text-align", "center")
+        //     .style("opacity", "0")
+        //     .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label))
+        //     .transition()
+        //     .delay(1500)
+        //     .duration(500)
+        //     .style("opacity", "1");
 
-        // Add p-value
-        bottomTextContainer.append("div")
-            .style("color", "white")
-            .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "0.75em") // Changed from 12px to 0.75em
-            .text(`p < ${calculatePValue(data).toFixed(2)} (n=${total})`);
+        // // Add p-value
+        // bottomTextContainer
+        //     .append("div")
+        //     .style("color", "white")
+        //     .style("font-family", "'Roboto', sans-serif")
+        //     .style("font-size", "0.75em") // Changed from 12px to 0.75em
+        //     .text(`p < ${calculatePValue(data).toFixed(2)} (n=${total})`);
     };
 
     // Function to calculate p-value (simplified approximation)
@@ -185,12 +196,12 @@ export function Dashboard() {
         return pValue;
     };
 
-    // Effect to create/update chart when selectedPoll changes
+    // Effect to create/update chart when selectedPoll or chartDimensions change
     useEffect(() => {
-        if (selectedPoll) {
+        if (selectedPoll && chartDimensions.width > 0) {
             createChart(selectedPoll);
         }
-    }, [selectedPoll]);
+    }, [selectedPoll, chartDimensions]);
 
     // Handler for button clicks (placeholder for future functionality)
     const handleButtonClick = (buttonId: string) => {
@@ -199,36 +210,61 @@ export function Dashboard() {
     };
 
     return (
-        <div className="flex flex-col h-screen">
+        <div id="dashboard-container" className="flex flex-col h-screen">
             {/* Header */}
-            <div className="flex-none p-4 flex justify-between items-center">
+            <div id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Snapinput</h1>
                 <ThemeToggle />
             </div>
             {/* Main content */}
-            <div className="flex-grow overflow-hidden p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+            <div id="dashboard-main-content" className="flex-grow overflow-hidden p-4">
+                <div id="dashboard-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
                     {/* Chart card */}
-                    <Card className="flex flex-col bg-black text-white">
-                        <CardHeader className="pb-0">
-                            <CardTitle className="text-2xl font-bold text-center font-serif">
+                    <Card id="chart-card" className="flex flex-col bg-black text-white">
+                        <CardHeader className="flex-none">
+                            <CardTitle id="chart-title" className="text-3xl font-bold text-center font-serif mb-4">
                                 {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="flex-grow h-full pt-0">
-                            <div ref={chartRef} className="w-full h-full"></div>
+                        <CardContent id="chart-content" className="flex-grow flex flex-col justify-between">
+                            <div className="flex-grow flex items-center justify-center">
+                                <div id="chart-container" ref={chartContainerRef} className="w-full" style={{ height: `${chartDimensions.height}px` }}></div>
+                            </div>
+                            <div id="chart-footer" className="w-full flex justify-between items-center px-2 mt-4">
+                                <div id="chart-footer-left" className="text-xs">
+                                    snapinput.com
+                                </div>
+                                <div
+                                    id="chart-footer-center"
+                                    className="text-sm text-center opacity-0 transition-opacity duration-500 delay-1500"
+                                    style={{ opacity: selectedPoll ? 1 : 0 }}
+                                >
+                                    Most people prefer{" "}
+                                    {selectedPoll &&
+                                        (parseInt(selectedPoll.resp_option1) > parseInt(selectedPoll.resp_option2)
+                                            ? selectedPoll.option1
+                                            : selectedPoll.option2)}
+                                </div>
+                                <div id="chart-footer-right" className="text-xs">
+                                    {selectedPoll &&
+                                        `p < ${calculatePValue([
+                                            { value: parseInt(selectedPoll.resp_option1) },
+                                            { value: parseInt(selectedPoll.resp_option2) },
+                                        ]).toFixed(2)} (n=${parseInt(selectedPoll.resp_option1) + parseInt(selectedPoll.resp_option2)})`}
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
                     {/* Data table card */}
-                    <Card className="flex flex-col overflow-hidden">
+                    <Card id="data-table-card" className="flex flex-col overflow-hidden">
                         <CardHeader>
                             <CardTitle>Micro Surveys</CardTitle>
                             <CardDescription>Click a row to update the chart</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col flex-grow overflow-hidden">
-                            <Input placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
-                            <div className="overflow-auto flex-grow">
+                        <CardContent id="data-table-content" className="flex flex-col flex-grow overflow-hidden">
+                            <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
+                            <div id="table-container" className="overflow-auto flex-grow">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -261,13 +297,23 @@ export function Dashboard() {
                 </div>
             </div>
             {/* Footer with buttons */}
-            <div className="flex-none p-4">
-                <div className="flex justify-center space-x-4">
-                    <Button onClick={() => handleButtonClick("function1")}>Function 1</Button>
-                    <Button onClick={() => handleButtonClick("function2")}>Function 2</Button>
-                    <Button onClick={() => handleButtonClick("function3")}>Function 3</Button>
-                    <Button onClick={() => handleButtonClick("function4")}>Function 4</Button>
-                    <Button onClick={() => handleButtonClick("function5")}>Function 5</Button>
+            <div id="dashboard-footer" className="flex-none p-4">
+                <div id="button-container" className="flex justify-center space-x-4">
+                    <Button id="function1-button" onClick={() => handleButtonClick("function1")}>
+                        Function 1
+                    </Button>
+                    <Button id="function2-button" onClick={() => handleButtonClick("function2")}>
+                        Function 2
+                    </Button>
+                    <Button id="function3-button" onClick={() => handleButtonClick("function3")}>
+                        Function 3
+                    </Button>
+                    <Button id="function4-button" onClick={() => handleButtonClick("function4")}>
+                        Function 4
+                    </Button>
+                    <Button id="function5-button" onClick={() => handleButtonClick("function5")}>
+                        Function 5
+                    </Button>
                 </div>
             </div>
         </div>

@@ -26,6 +26,10 @@ export function Dashboard() {
     const [isLoading, setIsLoading] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Add this new state variable
+    const [showRightColumnContent, setShowRightColumnContent] = useState(true);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
         if (poll !== selectedPoll) {
@@ -208,8 +212,11 @@ export function Dashboard() {
 
     // Handler for button clicks (placeholder for future functionality)
     const handleButtonClick = (buttonId: string) => {
-        console.log(`Button ${buttonId} clicked`);
-        // Placeholder for future functionality
+        if (buttonId === "function1") {
+            setShowRightColumnContent((prev) => !prev);
+        } else {
+            console.log(`Button ${buttonId} clicked`);
+        }
     };
 
     return (
@@ -284,39 +291,46 @@ export function Dashboard() {
                         </CardContent>
                     </Card>
 
-                    <Card id="data-table-card" className="flex flex-col overflow-hidden">
+                    <Card id="data-table-card" className="flex flex-col h-full">
                         <CardHeader>
-                            <CardTitle>Your Micro Surveys</CardTitle>
+                            <CardTitle>{showRightColumnContent ? "Your Micro Surveys" : "MyFunctionTitle"}</CardTitle>
                         </CardHeader>
-                        <CardContent id="data-table-content" className="flex flex-col flex-grow overflow-hidden">
-                            <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
-                            <div id="table-container" className="overflow-auto flex-grow">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Question</TableHead>
-                                            <TableHead>Option 1</TableHead>
-                                            <TableHead>Option 2</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {filteredData.map((poll) => (
-                                            <TableRow
-                                                key={poll.post_id}
-                                                onClick={() => handleRowClick(poll)}
-                                                className="cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                                            >
-                                                <TableCell>{poll.caption}</TableCell>
-                                                <TableCell>
-                                                    {poll.option1} ({poll.resp_option1})
-                                                </TableCell>
-                                                <TableCell>
-                                                    {poll.option2} ({poll.resp_option2})
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                        <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
+                            <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${showRightColumnContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                                <div className="p-4 flex flex-col h-full"> {/* Added padding here */}
+                                    <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
+                                    <div id="table-container" className="overflow-auto flex-grow">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Question</TableHead>
+                                                    <TableHead>Option 1</TableHead>
+                                                    <TableHead>Option 2</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {filteredData.map((poll) => (
+                                                    <TableRow
+                                                        key={poll.post_id}
+                                                        onClick={() => handleRowClick(poll)}
+                                                        className="cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                    >
+                                                        <TableCell>{poll.caption}</TableCell>
+                                                        <TableCell>
+                                                            {poll.option1} ({poll.resp_option1})
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {poll.option2} ({poll.resp_option2})
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!showRightColumnContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                                <p className="text-2xl font-bold">Function 1 Content</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -325,7 +339,7 @@ export function Dashboard() {
             <footer id="dashboard-footer" className="flex-none p-4">
                 <div id="button-container" className="flex justify-center space-x-4">
                     <Button id="function1-button" onClick={() => handleButtonClick("function1")}>
-                        Function 1
+                        {showRightColumnContent ? "Hide Content" : "Show Content"}
                     </Button>
                     <Button id="function2-button" onClick={() => handleButtonClick("function2")}>
                         Function 2

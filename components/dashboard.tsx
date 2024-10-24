@@ -123,7 +123,7 @@ export function Dashboard() {
             .text((d) => `${d.data.label}`)
             .style('text-anchor', (d, i) => (i === 0 ? 'start' : 'end'))
             .style('font-family', "'Roboto', sans-serif")
-            .style('font-size', '14px')
+            .style('font-size', '0.875em') // Changed from 14px to 0.875em
             .style('fill', 'white')
             .attr('dy', '0.35em')
             .style('opacity', 0)
@@ -148,14 +148,14 @@ export function Dashboard() {
         bottomTextContainer.append("div")
             .style("color", "white")
             .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "12px")
+            .style("font-size", "0.75em") // Changed from 12px to 0.75em
             .text("snapinput.com");
 
         // Add subtitle with the preferred option
         bottomTextContainer.append("div")
             .style("color", "white")
             .style("font-family", "'Libre Baskerville', serif")
-            .style("font-size", "16px")
+            .style("font-size", "1em") // Changed from 16px to 1em
             .style("text-align", "center")
             .style("opacity", "0")
             .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label))
@@ -168,7 +168,7 @@ export function Dashboard() {
         bottomTextContainer.append("div")
             .style("color", "white")
             .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "12px")
+            .style("font-size", "0.75em") // Changed from 12px to 0.75em
             .text(`p < ${calculatePValue(data).toFixed(2)} (n=${total})`);
     };
 

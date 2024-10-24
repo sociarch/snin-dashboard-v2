@@ -201,13 +201,10 @@ export function Dashboard() {
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="chart-footer" className="flex-1 flex justify-between items-end px-2">
-                                <span id="chart-footer-left" className="text-xs">
-                                    snapinput.com
-                                </span>
+                            <div id="chart-annotation" className="flex justify-center items-center py-4">
                                 <span
                                     id="chart-footer-center"
-                                    className="text-sm text-center opacity-0 transition-opacity duration-500 delay-1500"
+                                    className="text-[1.5em] text-center opacity-0 transition-opacity duration-500 delay-1500"
                                     style={{ opacity: selectedPoll ? 1 : 0 }}
                                 >
                                     Most people prefer{" "}
@@ -215,6 +212,11 @@ export function Dashboard() {
                                         (parseInt(selectedPoll.resp_option1) > parseInt(selectedPoll.resp_option2)
                                             ? selectedPoll.option1
                                             : selectedPoll.option2)}
+                                </span>
+                            </div>
+                            <div id="chart-footer" className="flex-1 flex justify-between items-end px-2">
+                                <span id="chart-footer-left" className="text-xs">
+                                    snapinput.com
                                 </span>
                                 <span id="chart-footer-right" className="text-xs">
                                     {selectedPoll &&

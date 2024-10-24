@@ -43,6 +43,7 @@ export function Dashboard() {
 
     const [reportContent, setReportContent] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState("");
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false); // New state for loading spinner
 
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
@@ -241,6 +242,8 @@ export function Dashboard() {
             return;
         }
 
+        setIsGeneratingReport(true); // Set loading state to true
+
         let promptIntro =
             "You are a data scientist and analyst. You are analyzing data from a question asked to the general public. The question is in a 'Yes/No' or 'Either/Or' format only and is sponsored by a company. You are provided with a dataset containing the following fields: create_date,post_id,is_user_generated,is_sponsored,sponsor_id,caption,option1,option2,total_responses,resp_option1,pct_option1,resp_option2,pct_option2,count_like,count_comment,count_bookmark,count_skip. Question response data corresponding to the above fields: ";
 
@@ -293,6 +296,8 @@ export function Dashboard() {
         } catch (err) {
             console.error(err);
             showAlert("Error generating report", "error");
+        } finally {
+            setIsGeneratingReport(false); // Set loading state to false
         }
     };
 
@@ -465,7 +470,7 @@ export function Dashboard() {
 
                     <Card id="data-table-card" className="flex flex-col h-full">
                         <CardHeader>
-                            <CardTitle>{showRightColumnContent ? "Your Micro Surveys" : "Generated Report"}</CardTitle>
+                            <CardTitle>{showRightColumnContent || isGeneratingReport || !reportContent ? "Your Micro Surveys" : "Generated Report"}</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
                             <div
@@ -474,8 +479,6 @@ export function Dashboard() {
                                 }`}
                             >
                                 <div className="p-4 flex flex-col h-full">
-                                    {" "}
-                                    {/* Added padding here */}
                                     <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
                                     <div id="table-container" className="overflow-auto flex-grow">
                                         <Table>
@@ -512,11 +515,24 @@ export function Dashboard() {
                                     !showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
                                 }`}
                             >
-                                {reportContent ? (
-                                    <div className="p-4 overflow-auto">
+                                {isGeneratingReport ? (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="loader">Loading...</div> {/* Simple spinner */}
+                                    </div>
+                                ) : reportContent ? (
+                                    <div className="p-4 overflow-auto relative">
+                                        <button
+                                            onClick={() => setShowRightColumnContent(true)}
+                                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
+                                        >
+                                            &times;
+                                        </button>
                                         <div className="whitespace-pre-wrap">{reportContent}</div>
                                         <div className="mt-4 text-sm text-gray-500">
-                                            This report was created by an artificial intelligence language model. While we strive for accuracy and quality, please note that the information and calculations provided may not be entirely error-free or up-to-date. We recommend independently verifying the content and consulting with professionals for specific advice or information. We do not assume any responsibility or liability for the use or interpretation of this content.
+                                            This report was created by an artificial intelligence language model. While we strive for accuracy and quality,
+                                            please note that the information and calculations provided may not be entirely error-free or up-to-date. We
+                                            recommend independently verifying the content and consulting with professionals for specific advice or information.
+                                            We do not assume any responsibility or liability for the use or interpretation of this content.
                                         </div>
                                     </div>
                                 ) : (

@@ -141,50 +141,6 @@ export function Dashboard() {
             .delay(1000)
             .duration(500)
             .style("opacity", 1);
-
-        // Create a container for the bottom text elements
-        // const bottomTextContainer = d3
-        //     .select(chartContainer)
-        //     .append("div")
-        //     .style("position", "absolute")
-        //     .style("bottom", "0")
-        //     .style("left", "0")
-        //     .style("width", "100%")
-        //     .style("height", "60px")
-        //     .style("display", "flex")
-        //     .style("justify-content", "space-between")
-        //     .style("align-items", "center")
-        //     .style("padding", "0 10px");
-
-        // // Add snapinput.com text
-        // bottomTextContainer
-        //     .append("div")
-        //     .style("color", "white")
-        //     .style("font-family", "'Roboto', sans-serif")
-        //     .style("font-size", "0.75em") // Changed from 12px to 0.75em
-        //     .text("snapinput.com");
-
-        // // Add subtitle with the preferred option
-        // bottomTextContainer
-        //     .append("div")
-        //     .style("color", "white")
-        //     .style("font-family", "'Libre Baskerville', serif")
-        //     .style("font-size", "1em") // Changed from 16px to 1em
-        //     .style("text-align", "center")
-        //     .style("opacity", "0")
-        //     .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label))
-        //     .transition()
-        //     .delay(1500)
-        //     .duration(500)
-        //     .style("opacity", "1");
-
-        // // Add p-value
-        // bottomTextContainer
-        //     .append("div")
-        //     .style("color", "white")
-        //     .style("font-family", "'Roboto', sans-serif")
-        //     .style("font-size", "0.75em") // Changed from 12px to 0.75em
-        //     .text(`p < ${calculatePValue(data).toFixed(2)} (n=${total})`);
     };
 
     // Function to calculate p-value (simplified approximation)
@@ -223,13 +179,29 @@ export function Dashboard() {
                 <div id="dashboard-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
                     <Card id="chart-card" className="flex flex-col bg-black text-white">
                         <CardContent id="chart-content" className="flex-grow flex flex-col h-full">
-                            <h2 id="chart-title" className="flex-1 flex items-center justify-center text-3xl font-bold text-center px-4">
-                                {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
-                            </h2>
+                            <div id="chart-title" className="flex-1 flex items-center justify-center">
+                                <h2 className="text-3xl font-bold text-center px-4">
+                                    {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
+                                </h2>
+                            </div>
                             <div id="chart-container" ref={chartContainerRef} className="flex-1 flex justify-center items-center">
                                 {/* SVG will be inserted here */}
                             </div>
-                            <footer id="chart-footer" className="flex-1 flex justify-between items-center px-2">
+                            <div id="chart-percentages" className="flex justify-center items-center">
+                                <table className="w-[95%] mx-auto">
+                                    <tbody>
+                                        <tr className="w-full">
+                                            <td className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold" style={{ color: "#ffd700" }}>
+                                                {selectedPoll ? `${(parseFloat(selectedPoll.pct_option1) * 100).toFixed(0)}%` : ""}
+                                            </td>
+                                            <td className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold" style={{ color: "#FA8072" }}>
+                                                {selectedPoll ? `${(parseFloat(selectedPoll.pct_option2) * 100).toFixed(0)}%` : ""}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="chart-footer" className="flex-1 flex justify-between items-end px-2">
                                 <span id="chart-footer-left" className="text-xs">
                                     snapinput.com
                                 </span>
@@ -251,14 +223,13 @@ export function Dashboard() {
                                             { value: parseInt(selectedPoll.resp_option2) },
                                         ]).toFixed(2)} (n=${parseInt(selectedPoll.resp_option1) + parseInt(selectedPoll.resp_option2)})`}
                                 </span>
-                            </footer>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card id="data-table-card" className="flex flex-col overflow-hidden">
                         <CardHeader>
                             <CardTitle>Micro Surveys</CardTitle>
-                            <CardDescription>Click a row to update the chart</CardDescription>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex flex-col flex-grow overflow-hidden">
                             <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />

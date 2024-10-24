@@ -17,9 +17,30 @@ export function Dashboard() {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
 
+    // Add new state to control visibility
+    const [showTitle, setShowTitle] = useState(false);
+    const [showPercentages, setShowPercentages] = useState(false);
+    const [showAnnotation, setShowAnnotation] = useState(false);
+
+    // Add new state to handle loading
+    const [isLoading, setIsLoading] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
-        setSelectedPoll(poll);
+        if (poll !== selectedPoll) {
+            setIsLoading(true);
+
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+
+            // Increase the delay before updating the poll
+            timeoutRef.current = setTimeout(() => {
+                setSelectedPoll(poll);
+                // Keep isLoading true to allow for chart creation
+            }, 500); // Increased from 300ms to 500ms
+        }
     };
 
     // Handler for search input changes
@@ -158,10 +179,32 @@ export function Dashboard() {
 
     // Effect to create/update chart when selectedPoll or chartDimensions change
     useEffect(() => {
-        if (selectedPoll && chartDimensions.width > 0) {
+        if (selectedPoll && chartDimensions.width > 0 && isLoading) {
             createChart(selectedPoll);
+
+            // Reset visibility states
+            setShowTitle(false);
+            setShowPercentages(false);
+            setShowAnnotation(false);
+
+            // Delay the start of fade-in effects and set isLoading to false
+            setTimeout(() => {
+                setIsLoading(false);
+                setTimeout(() => setShowTitle(true), 300);
+                setTimeout(() => setShowPercentages(true), 600);
+                setTimeout(() => setShowAnnotation(true), 900);
+            }, 500); // Allow 500ms for chart creation before starting fade-ins
         }
-    }, [selectedPoll, chartDimensions]);
+    }, [selectedPoll, chartDimensions, isLoading]);
+
+    // Clean up the timeout on component unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
     // Handler for button clicks (placeholder for future functionality)
     const handleButtonClick = (buttonId: string) => {
@@ -176,10 +219,18 @@ export function Dashboard() {
                 <ThemeToggle />
             </header>
             <main id="dashboard-main" className="flex-grow overflow-hidden p-4">
-                <div id="dashboard-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                    <Card id="chart-card" className="flex flex-col bg-black text-white">
-                        <CardContent id="chart-content" className="flex-grow flex flex-col h-full">
-                            <div id="chart-title" className="flex-1 flex items-center justify-center">
+                <div id="dashboard-grid" className="grid grid-cols-1 lg:grid-cols-[minmax(auto,600px)_1fr] gap-4 h-full">
+                    <Card id="chart-card" className="flex flex-col bg-black text-white w-full max-w-[600px] mx-auto">
+                        <CardContent
+                            id="chart-content"
+                            className={`flex-grow flex flex-col h-full max-h-[800px] transition-opacity duration-500 ${
+                                isLoading ? "opacity-0" : "opacity-100"
+                            }`}
+                        >
+                            <div
+                                id="chart-title"
+                                className={`flex-1 flex items-center justify-center transition-opacity duration-500 ${showTitle ? "opacity-100" : "opacity-0"}`}
+                            >
                                 <h2 className="text-3xl font-bold text-center px-4">
                                     {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
                                 </h2>
@@ -187,7 +238,10 @@ export function Dashboard() {
                             <div id="chart-container" ref={chartContainerRef} className="flex-1 flex justify-center items-center">
                                 {/* SVG will be inserted here */}
                             </div>
-                            <div id="chart-percentages" className="flex justify-center items-center">
+                            <div
+                                id="chart-percentages"
+                                className={`flex justify-center items-center transition-opacity duration-500 ${showPercentages ? "opacity-100" : "opacity-0"}`}
+                            >
                                 <table className="w-[95%] mx-auto">
                                     <tbody>
                                         <tr className="w-full">
@@ -201,12 +255,13 @@ export function Dashboard() {
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="chart-annotation" className="flex justify-center items-center py-4">
-                                <span
-                                    id="chart-footer-center"
-                                    className="text-[1.5em] text-center opacity-0 transition-opacity duration-500 delay-1500"
-                                    style={{ opacity: selectedPoll ? 1 : 0 }}
-                                >
+                            <div
+                                id="chart-annotation"
+                                className={`flex justify-center items-center py-4 transition-opacity duration-500 ${
+                                    showAnnotation ? "opacity-100" : "opacity-0"
+                                }`}
+                            >
+                                <span id="chart-footer-center" className="text-[1.5em] text-center">
                                     Most people prefer{" "}
                                     {selectedPoll &&
                                         (parseInt(selectedPoll.resp_option1) > parseInt(selectedPoll.resp_option2)
@@ -231,7 +286,7 @@ export function Dashboard() {
 
                     <Card id="data-table-card" className="flex flex-col overflow-hidden">
                         <CardHeader>
-                            <CardTitle>Micro Surveys</CardTitle>
+                            <CardTitle>Your Micro Surveys</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex flex-col flex-grow overflow-hidden">
                             <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />

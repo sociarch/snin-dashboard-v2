@@ -42,7 +42,7 @@ export function Dashboard() {
     const updateChartDimensions = () => {
         if (chartContainerRef.current) {
             const width = chartContainerRef.current.clientWidth;
-            const height = Math.min(width / 2, 250); // Maintain proportion, but limit the height
+            const height = Math.min(width / 2, 500); // Maintain proportion, but limit the height
             setChartDimensions({ width, height });
         }
     };
@@ -58,29 +58,33 @@ export function Dashboard() {
     const createChart = (poll: PollDataItem) => {
         if (!chartContainerRef.current) return;
 
-        const { width, height } = chartDimensions;
-        const radius = Math.min(width, height * 2) / 2;
+        const containerWidth = chartContainerRef.current.clientWidth;
+        const svgWidth = containerWidth * 0.95; // 95% of the container width
+        const svgHeight = svgWidth / 2; // Half the width for a semi-circle
 
-        d3.select(chartContainerRef.current).selectAll("*").remove(); // Clear existing chart
+        // Clear existing chart
+        d3.select(chartContainerRef.current).selectAll("*").remove();
 
         const svg = d3
             .select(chartContainerRef.current)
             .append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width", svgWidth)
+            .attr("height", svgHeight)
+            .style("display", "block")
+            .style("margin", "auto") // Center the SVG horizontally
             .append("g")
-            .attr("transform", `translate(${width / 2}, ${height})`);
+            .attr("transform", `translate(${svgWidth / 2}, ${svgHeight})`);
 
         // Define arc generators
         const arc = d3
             .arc<d3.PieArcDatum<any>>()
-            .innerRadius(radius * 0.6)
-            .outerRadius(radius);
+            .innerRadius(svgHeight * 0.6)
+            .outerRadius(svgHeight);
 
         const labelArc = d3
             .arc<d3.PieArcDatum<any>>()
-            .innerRadius(radius * 0.85)
-            .outerRadius(radius * 0.85);
+            .innerRadius(svgHeight * 0.85)
+            .outerRadius(svgHeight * 0.85);
 
         // Define pie layout
         const pie = d3
@@ -211,30 +215,25 @@ export function Dashboard() {
 
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">
-            {/* Header */}
-            <div id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
+            <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Snapinput</h1>
                 <ThemeToggle />
-            </div>
-            {/* Main content */}
-            <div id="dashboard-main-content" className="flex-grow overflow-hidden p-4">
+            </header>
+            <main id="dashboard-main" className="flex-grow overflow-hidden p-4">
                 <div id="dashboard-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                    {/* Chart card */}
                     <Card id="chart-card" className="flex flex-col bg-black text-white">
-                        <CardHeader className="flex-none">
-                            <CardTitle id="chart-title" className="text-3xl font-bold text-center font-serif mb-4">
+                        <CardContent id="chart-content" className="flex-grow flex flex-col h-full">
+                            <h2 id="chart-title" className="flex-1 flex items-center justify-center text-3xl font-bold text-center px-4">
                                 {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent id="chart-content" className="flex-grow flex flex-col justify-between">
-                            <div className="flex-grow flex items-center justify-center">
-                                <div id="chart-container" ref={chartContainerRef} className="w-full" style={{ height: `${chartDimensions.height}px` }}></div>
+                            </h2>
+                            <div id="chart-container" ref={chartContainerRef} className="flex-1 flex justify-center items-center">
+                                {/* SVG will be inserted here */}
                             </div>
-                            <div id="chart-footer" className="w-full flex justify-between items-center px-2 mt-4">
-                                <div id="chart-footer-left" className="text-xs">
+                            <footer id="chart-footer" className="flex-1 flex justify-between items-center px-2">
+                                <span id="chart-footer-left" className="text-xs">
                                     snapinput.com
-                                </div>
-                                <div
+                                </span>
+                                <span
                                     id="chart-footer-center"
                                     className="text-sm text-center opacity-0 transition-opacity duration-500 delay-1500"
                                     style={{ opacity: selectedPoll ? 1 : 0 }}
@@ -244,19 +243,18 @@ export function Dashboard() {
                                         (parseInt(selectedPoll.resp_option1) > parseInt(selectedPoll.resp_option2)
                                             ? selectedPoll.option1
                                             : selectedPoll.option2)}
-                                </div>
-                                <div id="chart-footer-right" className="text-xs">
+                                </span>
+                                <span id="chart-footer-right" className="text-xs">
                                     {selectedPoll &&
                                         `p < ${calculatePValue([
                                             { value: parseInt(selectedPoll.resp_option1) },
                                             { value: parseInt(selectedPoll.resp_option2) },
                                         ]).toFixed(2)} (n=${parseInt(selectedPoll.resp_option1) + parseInt(selectedPoll.resp_option2)})`}
-                                </div>
-                            </div>
+                                </span>
+                            </footer>
                         </CardContent>
                     </Card>
 
-                    {/* Data table card */}
                     <Card id="data-table-card" className="flex flex-col overflow-hidden">
                         <CardHeader>
                             <CardTitle>Micro Surveys</CardTitle>
@@ -295,9 +293,8 @@ export function Dashboard() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
-            {/* Footer with buttons */}
-            <div id="dashboard-footer" className="flex-none p-4">
+            </main>
+            <footer id="dashboard-footer" className="flex-none p-4">
                 <div id="button-container" className="flex justify-center space-x-4">
                     <Button id="function1-button" onClick={() => handleButtonClick("function1")}>
                         Function 1
@@ -315,7 +312,7 @@ export function Dashboard() {
                         Function 5
                     </Button>
                 </div>
-            </div>
+            </footer>
         </div>
     );
 }

@@ -9,6 +9,13 @@ import * as d3 from "d3";
 import { pollData, PollDataItem } from "./pollData";
 import { ThemeToggle } from "./theme-toggle";
 
+// Add this near the top of your component, with other function declarations
+const generateReport = () => {
+    console.log("Generating report...");
+    // Placeholder for report generation logic
+    alert("Report generation started. This is a placeholder.");
+};
+
 export function Dashboard() {
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
@@ -296,8 +303,14 @@ export function Dashboard() {
                             <CardTitle>{showRightColumnContent ? "Your Micro Surveys" : "MyFunctionTitle"}</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
-                            <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${showRightColumnContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                                <div className="p-4 flex flex-col h-full"> {/* Added padding here */}
+                            <div
+                                className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
+                                    showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
+                                }`}
+                            >
+                                <div className="p-4 flex flex-col h-full">
+                                    {" "}
+                                    {/* Added padding here */}
                                     <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
                                     <div id="table-container" className="overflow-auto flex-grow">
                                         <Table>
@@ -329,8 +342,14 @@ export function Dashboard() {
                                     </div>
                                 </div>
                             </div>
-                            <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${!showRightColumnContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                                <p className="text-2xl font-bold">Function 1 Content</p>
+                            <div
+                                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                                    !showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
+                                }`}
+                            >
+                                <Button onClick={generateReport} className="text-2xl font-bold">
+                                    Generate Report
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

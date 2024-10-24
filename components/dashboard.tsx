@@ -47,7 +47,7 @@ export function Dashboard() {
         // Set up chart dimensions
         const width = chartContainer.clientWidth;
         const height = chartContainer.clientHeight;
-        const radius = (Math.min(width, height) / 2) * 0.7;
+        const radius = (Math.min(width, height) / 2) * 0.8; // Increased radius slightly
 
         // Create a container for all elements
         const container = d3.select(chartContainer)
@@ -59,11 +59,11 @@ export function Dashboard() {
         // Create SVG element for the pie chart
         const svg = container.append("svg")
             .attr("width", width)
-            .attr("height", height)
+            .attr("height", height - 60) // Reduced height to make room for text below
             .style("position", "absolute")
             .style("top", "0")
             .append("g")
-            .attr("transform", `translate(${width / 2},${height / 2})`);
+            .attr("transform", `translate(${width / 2},${(height - 60) / 2})`);
 
         // Define arc generators for the pie chart
         const arc = d3
@@ -107,16 +107,31 @@ export function Dashboard() {
                 };
             });
 
-        // Add subtitle with the preferred option
-        container.append("div")
+        // Create a container for the bottom text elements
+        const bottomTextContainer = container.append("div")
             .style("position", "absolute")
-            .style("bottom", "40px")
-            .style("left", "10px")
-            .style("right", "10px")
-            .style("text-align", "center")
+            .style("bottom", "0")
+            .style("left", "0")
+            .style("width", "100%")
+            .style("height", "60px")
+            .style("display", "flex")
+            .style("justify-content", "space-between")
+            .style("align-items", "center")
+            .style("padding", "0 10px");
+
+        // Add snapinput.com text
+        bottomTextContainer.append("div")
+            .style("color", "white")
+            .style("font-family", "'Roboto', sans-serif")
+            .style("font-size", "12px")
+            .text("snapinput.com");
+
+        // Add subtitle with the preferred option
+        bottomTextContainer.append("div")
             .style("color", "white")
             .style("font-family", "'Libre Baskerville', serif")
             .style("font-size", "16px")
+            .style("text-align", "center")
             .style("opacity", "0")
             .text("Most people prefer " + (data[0].value > data[1].value ? data[0].label : data[1].label))
             .transition()
@@ -125,24 +140,11 @@ export function Dashboard() {
             .style("opacity", "1");
 
         // Add p-value
-        container.append("div")
-            .style("position", "absolute")
-            .style("bottom", "10px")
-            .style("right", "10px")
+        bottomTextContainer.append("div")
             .style("color", "white")
             .style("font-family", "'Roboto', sans-serif")
             .style("font-size", "12px")
             .text(`p < ${calculatePValue(data).toFixed(2)} (n=${total})`);
-
-        // Add snapinput.com text
-        container.append("div")
-            .style("position", "absolute")
-            .style("bottom", "10px")
-            .style("left", "10px")
-            .style("color", "white")
-            .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "12px")
-            .text("snapinput.com");
     };
 
     // Function to calculate p-value (simplified approximation)
@@ -175,7 +177,7 @@ export function Dashboard() {
         <div className="flex flex-col h-screen">
             {/* Header */}
             <div className="flex-none p-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Poll Results Dashboard</h1>
+                <h1 className="text-2xl font-bold">Snapinput</h1>
                 <ThemeToggle />
             </div>
             {/* Main content */}
@@ -196,11 +198,11 @@ export function Dashboard() {
                     {/* Data table card */}
                     <Card className="flex flex-col overflow-hidden">
                         <CardHeader>
-                            <CardTitle>Poll Data</CardTitle>
+                            <CardTitle>Micro Surveys</CardTitle>
                             <CardDescription>Click a row to update the chart</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col flex-grow overflow-hidden">
-                            <Input placeholder="Search polls..." value={searchTerm} onChange={handleSearch} className="mb-4" />
+                            <Input placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
                             <div className="overflow-auto flex-grow">
                                 <Table>
                                     <TableHeader>

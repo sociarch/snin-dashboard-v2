@@ -11,13 +11,18 @@ import { ThemeToggle } from "./theme-toggle";
 
 // Add these new imports
 import { jsPDF } from "jspdf";
-import { showAlert } from "@/lib/utils"; // You'll need to create this utility function
 
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
     console.log("Generating report...");
     // Placeholder for report generation logic
     alert("Report generation started. This is a placeholder.");
+};
+
+// Add this near the top of your Dashboard component
+const showAlert = (message: string, type: 'error' | 'success' | 'info') => {
+    console.log(`${type.toUpperCase()}: ${message}`);
+    // You can replace this with a more sophisticated alert system later
 };
 
 export function Dashboard() {
@@ -44,12 +49,14 @@ export function Dashboard() {
     const [reportContent, setReportContent] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState("");
     const [isGeneratingReport, setIsGeneratingReport] = useState(false); // New state for loading spinner
+    const [preloadedReport, setPreloadedReport] = useState<string | null>(null);
 
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
         if (poll !== selectedPoll) {
             setIsLoading(true);
-            setReportContent(null); // Reset the report content when a new row is selected
+            setReportContent(null);
+            setPreloadedReport(null);
 
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
@@ -58,9 +65,45 @@ export function Dashboard() {
             // Increase the delay before updating the poll
             timeoutRef.current = setTimeout(() => {
                 setSelectedPoll(poll);
-                setShowRightColumnContent(true); // Show the survey table when a new poll is selected
-                // Keep isLoading true to allow for chart creation
-            }, 500); // Increased from 300ms to 500ms
+                setShowRightColumnContent(true);
+                // Start preloading the report
+                preloadReport(poll);
+            }, 500);
+        }
+    };
+
+    // Function to preload the report
+    const preloadReport = async (poll: PollDataItem) => {
+        const promptIntro = "You are a data scientist and analyst..."; // Your existing prompt intro
+        let questionData = Object.values(poll).join(",");
+        let reportInstructions = ". Please write a concise report..."; // Your existing instructions
+        let additionalGuidelines = " Follow-up questions should not be..."; // Your existing guidelines
+        let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
+
+        const options = {
+            method: "POST",
+            headers: {
+                accept: "application/json",
+                "content-type": "application/json",
+                Authorization: "Bearer 8d95a9a2f429b79f8c2464de290193b505d5b551b38c87294c45ffa3c5d50099",
+            },
+            body: JSON.stringify({
+                model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+                max_tokens: 2048,
+                messages: [{ role: "system", content: fullPrompt }],
+                temperature: 0.44,
+                repetition_penalty: 1.1,
+                top_p: 0.7,
+                top_k: 50,
+            }),
+        };
+
+        try {
+            const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
+            const data = await response.json();
+            setPreloadedReport(data.response);
+        } catch (err) {
+            console.error("Error preloading report:", err);
         }
     };
 
@@ -242,62 +285,68 @@ export function Dashboard() {
             return;
         }
 
-        setIsGeneratingReport(true); // Set loading state to true
+        setIsGeneratingReport(true);
 
-        let promptIntro =
-            "You are a data scientist and analyst. You are analyzing data from a question asked to the general public. The question is in a 'Yes/No' or 'Either/Or' format only and is sponsored by a company. You are provided with a dataset containing the following fields: create_date,post_id,is_user_generated,is_sponsored,sponsor_id,caption,option1,option2,total_responses,resp_option1,pct_option1,resp_option2,pct_option2,count_like,count_comment,count_bookmark,count_skip. Question response data corresponding to the above fields: ";
-
-        let questionData = Object.values(selectedPoll).join(",");
-
-        let reportInstructions =
-            ". Please write a concise report in order of: 1. Analyze the data and numbers: Identify key trends and insights related to the sponsor's specific question. 2. Summary and Insight: Clearly summarize the results of the question. Highlight any statistically significant findings. 3. Suggest potential next steps: Formulate 2-3 follow-up questions in the 'Either/Or' format that could help the sponsor gather more specific information based on these initial results.";
-
-        let additionalGuidelines =
-            " Follow-up questions should not be open-ended. These questions should directly build upon the insights gained. Also, potential next steps could include, for example, 'Consider a new marketing campaign targeting X demographic. Include only if it is appropriate'. IMPORTANT: Ensure the data comes from the provided data above. Please NEVER include statements about the quality of the question and its engagement with (likes, comments, bookmarks, and skips). Please avoid commenting on the question's limited engagement or low response rate if possible.";
-
-        let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
-
-        console.log("Prompt for AI:", fullPrompt);
-
-        const fileName = `SnapInput Report: ${selectedPoll.option1} vs ${selectedPoll.option2} (${selectedPoll.post_id})`;
-        setPdfFileName(`SnapInput_report_${selectedPoll.option1}_${selectedPoll.option2}_${selectedPoll.post_id}.pdf`);
-
-        const options = {
-            method: "POST",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                Authorization: "Bearer 8d95a9a2f429b79f8c2464de290193b505d5b551b38c87294c45ffa3c5d50099",
-            },
-            body: JSON.stringify({
-                model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-                max_tokens: 2048,
-                messages: [
-                    {
-                        role: "system",
-                        content: fullPrompt,
-                    },
-                ],
-                temperature: 0.44,
-                repetition_penalty: 1.1,
-                top_p: 0.7,
-                top_k: 50,
-            }),
-        };
-
-        try {
-            const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
-            const data = await response.json();
-            const responseContent = data.response;
-            setReportContent(responseContent);
-
-            // Switch to the report view
+        if (preloadedReport) {
+            setReportContent(preloadedReport);
             setShowRightColumnContent(false);
-        } catch (err) {
-            console.error(err);
-            showAlert("Error generating report", "error");
-        } finally {
-            setIsGeneratingReport(false); // Set loading state to false
+            setIsGeneratingReport(false);
+        } else {
+            let promptIntro =
+                "You are a data scientist and analyst. You are analyzing data from a question asked to the general public. The question is in a 'Yes/No' or 'Either/Or' format only and is sponsored by a company. You are provided with a dataset containing the following fields: create_date,post_id,is_user_generated,is_sponsored,sponsor_id,caption,option1,option2,total_responses,resp_option1,pct_option1,resp_option2,pct_option2,count_like,count_comment,count_bookmark,count_skip. Question response data corresponding to the above fields: ";
+
+            let questionData = Object.values(selectedPoll).join(",");
+
+            let reportInstructions =
+                ". Please write a concise report in order of: 1. Analyze the data and numbers: Identify key trends and insights related to the sponsor's specific question. 2. Summary and Insight: Clearly summarize the results of the question. Highlight any statistically significant findings. 3. Suggest potential next steps: Formulate 2-3 follow-up questions in the 'Either/Or' format that could help the sponsor gather more specific information based on these initial results.";
+
+            let additionalGuidelines =
+                " Follow-up questions should not be open-ended. These questions should directly build upon the insights gained. Also, potential next steps could include, for example, 'Consider a new marketing campaign targeting X demographic. Include only if it is appropriate'. IMPORTANT: Ensure the data comes from the provided data above. Please NEVER include statements about the quality of the question and its engagement with (likes, comments, bookmarks, and skips). Please avoid commenting on the question's limited engagement or low response rate if possible.";
+
+            let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
+
+            console.log("Prompt for AI:", fullPrompt);
+
+            const fileName = `SnapInput Report: ${selectedPoll.option1} vs ${selectedPoll.option2} (${selectedPoll.post_id})`;
+            setPdfFileName(`SnapInput_report_${selectedPoll.option1}_${selectedPoll.option2}_${selectedPoll.post_id}.pdf`);
+
+            const options = {
+                method: "POST",
+                headers: {
+                    accept: "application/json",
+                    "content-type": "application/json",
+                    Authorization: "Bearer 8d95a9a2f429b79f8c2464de290193b505d5b551b38c87294c45ffa3c5d50099",
+                },
+                body: JSON.stringify({
+                    model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+                    max_tokens: 2048,
+                    messages: [
+                        {
+                            role: "system",
+                            content: fullPrompt,
+                        },
+                    ],
+                    temperature: 0.44,
+                    repetition_penalty: 1.1,
+                    top_p: 0.7,
+                    top_k: 50,
+                }),
+            };
+
+            try {
+                const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
+                const data = await response.json();
+                const responseContent = data.response;
+                setReportContent(responseContent);
+
+                // Switch to the report view
+                setShowRightColumnContent(false);
+            } catch (err) {
+                console.error(err);
+                showAlert("Error generating report", "error");
+            } finally {
+                setIsGeneratingReport(false);
+            }
         }
     };
 
@@ -519,7 +568,7 @@ export function Dashboard() {
                                     <div className="flex items-center justify-center h-full">
                                         <div className="loader">Loading...</div> {/* Simple spinner */}
                                     </div>
-                                ) : reportContent ? (
+                                ) : reportContent || preloadedReport ? (
                                     <div className="p-4 overflow-auto relative">
                                         <button
                                             onClick={() => setShowRightColumnContent(true)}
@@ -527,7 +576,7 @@ export function Dashboard() {
                                         >
                                             &times;
                                         </button>
-                                        <div className="whitespace-pre-wrap">{reportContent}</div>
+                                        <div className="whitespace-pre-wrap">{reportContent || preloadedReport}</div>
                                         <div className="mt-4 text-sm text-gray-500">
                                             This report was created by an artificial intelligence language model. While we strive for accuracy and quality,
                                             please note that the information and calculations provided may not be entirely error-free or up-to-date. We

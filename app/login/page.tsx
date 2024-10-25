@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-[#1C1F26]">
-            <Card className="w-full max-w-[800px] flex overflow-hidden">
+            <Card className="w-full max-w-[800px] flex overflow-hidden min-h-[500px]">
                 <div className="w-1/2 relative">
                     <Image
                         src="/core.png"

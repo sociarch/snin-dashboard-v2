@@ -13,6 +13,9 @@ import { useAuth } from "@/contexts/AuthContext";
 // Add these new imports
 import { jsPDF } from "jspdf";
 
+// Add this import at the top of the file
+import { fetchPollData } from "./fetchPollData";
+
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
     console.log("Generating report...");
@@ -32,7 +35,7 @@ export function Dashboard() {
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filteredData, setFilteredData] = useState<PollDataItem[]>(pollData);
+    const [filteredData, setFilteredData] = useState<PollDataItem[]>([]);
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
 
@@ -42,7 +45,7 @@ export function Dashboard() {
     const [showAnnotation, setShowAnnotation] = useState(false);
 
     // Add new state to handle loading
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Add this new state variable
@@ -53,6 +56,24 @@ export function Dashboard() {
     const [pdfFileName, setPdfFileName] = useState("");
     const [isGeneratingReport, setIsGeneratingReport] = useState(false); // New state for loading spinner
     const [preloadedReport, setPreloadedReport] = useState<string | null>(null);
+
+    // Add this useEffect hook to fetch data when the component mounts
+    useEffect(() => {
+        const loadPollData = async () => {
+            try {
+                setIsLoading(true);
+                const data = await fetchPollData();
+                setFilteredData(data);
+            } catch (error) {
+                console.error("Error loading poll data:", error);
+                // You might want to set some error state here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadPollData();
+    }, []);
 
     // Handler for when a table row is clicked
     const handleRowClick = (poll: PollDataItem) => {
@@ -114,8 +135,8 @@ export function Dashboard() {
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const searchTerm = event.target.value.toLowerCase();
         setSearchTerm(searchTerm);
-        // Filter the poll data based on the search term
-        const filtered = pollData.filter(
+
+        const filtered = filteredData.filter(
             (poll) =>
                 poll.caption.toLowerCase().includes(searchTerm) ||
                 poll.option1.toLowerCase().includes(searchTerm) ||
@@ -528,43 +549,49 @@ export function Dashboard() {
                             <CardTitle>{showRightColumnContent || isGeneratingReport || !reportContent ? "Your Micro Surveys" : "Generated Report"}</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
-                            <div
-                                className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
-                                    showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
-                                }`}
-                            >
-                                <div className="p-4 flex flex-col h-full">
-                                    <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
-                                    <div id="table-container" className="overflow-auto flex-grow">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Question</TableHead>
-                                                    <TableHead>Option 1</TableHead>
-                                                    <TableHead>Option 2</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {filteredData.map((poll) => (
-                                                    <TableRow
-                                                        key={poll.post_id}
-                                                        onClick={() => handleRowClick(poll)}
-                                                        className="cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                                                    >
-                                                        <TableCell>{poll.caption}</TableCell>
-                                                        <TableCell>
-                                                            {poll.option1} ({poll.resp_option1})
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {poll.option2} ({poll.resp_option2})
-                                                        </TableCell>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="spinner"></div>
+                                </div>
+                            ) : (
+                                <div
+                                    className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
+                                        showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
+                                    }`}
+                                >
+                                    <div className="p-4 flex flex-col h-full">
+                                        <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
+                                        <div id="table-container" className="overflow-auto flex-grow">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Question</TableHead>
+                                                        <TableHead>Option 1</TableHead>
+                                                        <TableHead>Option 2</TableHead>
                                                     </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {filteredData.map((poll) => (
+                                                        <TableRow
+                                                            key={poll.post_id}
+                                                            onClick={() => handleRowClick(poll)}
+                                                            className="cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                        >
+                                                            <TableCell>{poll.caption}</TableCell>
+                                                            <TableCell>
+                                                                {poll.option1} ({poll.resp_option1})
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {poll.option2} ({poll.resp_option2})
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                             <div
                                 className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
                                     !showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"

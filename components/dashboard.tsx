@@ -21,7 +21,7 @@ const generateReport = () => {
 };
 
 // Add this near the top of your Dashboard component
-const showAlert = (message: string, type: 'error' | 'success' | 'info') => {
+const showAlert = (message: string, type: "error" | "success" | "info") => {
     console.log(`${type.toUpperCase()}: ${message}`);
     // You can replace this with a more sophisticated alert system later
 };

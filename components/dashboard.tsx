@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import * as d3 from "d3";
 import { pollData, PollDataItem } from "./pollData";
 import { ThemeToggle } from "./theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Add these new imports
 import { jsPDF } from "jspdf";
@@ -26,6 +27,8 @@ const showAlert = (message: string, type: 'error' | 'success' | 'info') => {
 };
 
 export function Dashboard() {
+    const { signOut } = useAuth();
+
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
@@ -449,7 +452,10 @@ export function Dashboard() {
         <div id="dashboard-container" className="flex flex-col h-screen">
             <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Snapinput</h1>
-                <ThemeToggle />
+                <div className="flex items-center space-x-4">
+                    <ThemeToggle />
+                    <Button onClick={signOut}>Sign Out</Button>
+                </div>
             </header>
             <main id="dashboard-main" className="flex-grow overflow-hidden p-4">
                 <div id="dashboard-grid" className="grid grid-cols-1 lg:grid-cols-[minmax(auto,600px)_1fr] gap-4 h-full">

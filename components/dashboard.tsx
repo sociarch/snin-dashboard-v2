@@ -16,6 +16,9 @@ import { jsPDF } from "jspdf";
 // Add this import at the top of the file
 import { fetchPollData } from "./fetchPollData";
 
+// Add this import at the top of the file
+import { X } from "lucide-react";
+
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
     console.log("Generating report...");
@@ -469,6 +472,12 @@ export function Dashboard() {
         link.click();
     };
 
+    // Add this new function to handle the reset
+    const handleResetSearch = () => {
+        setSearchTerm("");
+        setFilteredData(pollData); // Assuming pollData contains all the original data
+    };
+
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">
             <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
@@ -560,7 +569,23 @@ export function Dashboard() {
                                     }`}
                                 >
                                     <div className="p-4 flex flex-col h-full">
-                                        <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="mb-4" />
+                                        <div className="flex mb-4">
+                                            <Input 
+                                                id="search-input" 
+                                                placeholder="Search..." 
+                                                value={searchTerm} 
+                                                onChange={handleSearch} 
+                                                className="flex-grow"
+                                            />
+                                            <Button 
+                                                onClick={handleResetSearch}
+                                                className="ml-2"
+                                                variant="outline"
+                                                size="icon"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                         <div id="table-container" className="overflow-auto flex-grow">
                                             <Table>
                                                 <TableHeader>

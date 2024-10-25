@@ -1,7 +1,17 @@
 /** @type {import('tailwindcss').Config} */
+const defaultTheme = require("tailwindcss/defaultTheme");
+const colors = require("tailwindcss/colors");
+const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
+
+/** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: ["class"],
-    content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+    content: [
+        './pages/**/*.{js,ts,jsx,tsx,mdx}',
+        './components/**/*.{js,ts,jsx,tsx,mdx}',
+        './app/**/*.{js,ts,jsx,tsx,mdx}',
+        './src/**/*.{js,ts,jsx,tsx,mdx}',
+    ],
     theme: {
         container: {
             center: true,
@@ -67,21 +77,8 @@ module.exports = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate")],
-};
-const defaultTheme = require("tailwindcss/defaultTheme");
-const colors = require("tailwindcss/colors");
-const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-    content: ["./src/**/*.{ts,tsx}"],
-    darkMode: "class",
-    theme: {
-        // rest of the code
-    },
     plugins: [
-        // rest of the code
+        require("tailwindcss-animate"),
         addVariablesForColors,
     ],
 };

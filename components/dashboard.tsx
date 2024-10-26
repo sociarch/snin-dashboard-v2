@@ -496,12 +496,12 @@ export function Dashboard() {
                     <Button onClick={signOut}>Sign Out</Button>
                 </div>
             </header>
-            <main id="dashboard-main" className="flex-grow overflow-hidden p-4">
-                <div id="dashboard-grid" className="grid grid-cols-1 lg:grid-cols-[minmax(auto,600px)_1fr] gap-4 h-full">
+            <main id="dashboard-main" className="flex-grow overflow-hidden p-4 flex flex-col">
+                <div id="dashboard-grid" className="grid grid-cols-1 lg:grid-cols-[minmax(auto,600px)_1fr] gap-4 flex-grow">
                     <Card id="chart-card" className="flex flex-col bg-black text-white w-full max-w-[600px] mx-auto">
                         <CardContent
                             id="chart-content"
-                            className={`flex-grow flex flex-col h-full max-h-[800px] transition-opacity duration-500 ${
+                            className={`flex-grow flex flex-col h-full transition-opacity duration-500 ${
                                 isLoading ? "opacity-0" : "opacity-100"
                             }`}
                         >
@@ -562,7 +562,7 @@ export function Dashboard() {
                         </CardContent>
                     </Card>
 
-                    <Card id="data-table-card" className="flex flex-col h-full">
+                    <Card id="data-table-card" className="flex flex-col">
                         <CardHeader>
                             <CardTitle>{showRightColumnContent || isGeneratingReport || !reportContent ? "Your Micro Surveys" : "Generated Report"}</CardTitle>
                         </CardHeader>
@@ -651,46 +651,47 @@ export function Dashboard() {
                         </CardContent>
                     </Card>
                 </div>
+                
+                <footer id="dashboard-footer" className="mt-4">
+                    <div id="button-container" className="flex justify-center space-x-2 max-w-3xl mx-auto">
+                        <Button 
+                            id="function1-button" 
+                            onClick={() => handleButtonClick("function1")}
+                            className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                        >
+                            {showRightColumnContent ? "View Report" : "Show Surveys"}
+                        </Button>
+                        <Button 
+                            id="function2-button" 
+                            onClick={() => handleButtonClick("function2")}
+                            className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
+                        >
+                            Function 2
+                        </Button>
+                        <Button 
+                            id="function3-button" 
+                            onClick={() => handleButtonClick("function3")}
+                            className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                        >
+                            Function 3
+                        </Button>
+                        <Button 
+                            id="function4-button" 
+                            onClick={() => handleButtonClick("function4")}
+                            className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
+                        >
+                            Function 4
+                        </Button>
+                        <Button 
+                            id="function5-button" 
+                            onClick={() => handleButtonClick("function5")}
+                            className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                        >
+                            Function 5
+                        </Button>
+                    </div>
+                </footer>
             </main>
-            <footer id="dashboard-footer" className="flex-none p-4 bg-card">
-                <div id="button-container" className="flex justify-center space-x-2 max-w-3xl mx-auto">
-                    <Button 
-                        id="function1-button" 
-                        onClick={() => handleButtonClick("function1")}
-                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
-                    >
-                        {showRightColumnContent ? "View Report" : "Show Surveys"}
-                    </Button>
-                    <Button 
-                        id="function2-button" 
-                        onClick={() => handleButtonClick("function2")}
-                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
-                    >
-                        Function 2
-                    </Button>
-                    <Button 
-                        id="function3-button" 
-                        onClick={() => handleButtonClick("function3")}
-                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
-                    >
-                        Function 3
-                    </Button>
-                    <Button 
-                        id="function4-button" 
-                        onClick={() => handleButtonClick("function4")}
-                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
-                    >
-                        Function 4
-                    </Button>
-                    <Button 
-                        id="function5-button" 
-                        onClick={() => handleButtonClick("function5")}
-                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
-                    >
-                        Function 5
-                    </Button>
-                </div>
-            </footer>
         </div>
     );
 }

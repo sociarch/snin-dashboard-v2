@@ -41,8 +41,10 @@ const calculateFontSize = (text: string) => {
     return "text-lg";
 };
 
+import BotpressEmbed from './BotpressEmbed';
+
 export function Dashboard() {
-    const { signOut } = useAuth();
+    const { signOut, remainingQuestions } = useAuth();
 
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
@@ -714,11 +716,12 @@ export function Dashboard() {
                             onClick={() => handleButtonClick("function5")}
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
                         >
-                            Function 5
+                            {remainingQuestions !== null ? `Questions Left: ${remainingQuestions}` : 'Loading...'}
                         </Button>
                     </div>
                 </footer>
             </main>
+            <BotpressEmbed />
         </div>
     );
 }

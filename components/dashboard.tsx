@@ -490,10 +490,10 @@ export function Dashboard() {
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">
             <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Snapinput</h1>
-                <div className="flex items-center space-x-4">
+                <h1 id="dashboard-title" className="text-2xl font-bold">Snapinput</h1>
+                <div id="header-controls" className="flex items-center space-x-4">
                     <ThemeToggle />
-                    <Button onClick={signOut}>Sign Out</Button>
+                    <Button id="sign-out-button" onClick={signOut}>Sign Out</Button>
                 </div>
             </header>
             <main id="dashboard-main" className="flex-grow overflow-hidden p-4 flex flex-col">
@@ -506,10 +506,10 @@ export function Dashboard() {
                             }`}
                         >
                             <div
-                                id="chart-title"
+                                id="chart-title-container"
                                 className={`flex-1 flex items-center justify-center transition-opacity duration-500 ${showTitle ? "opacity-100" : "opacity-0"}`}
                             >
-                                <h2 className={`font-bold text-center px-4 ${calculateFontSize(selectedPoll ? selectedPoll.caption : "")}`}>
+                                <h2 id="chart-title" className={`font-bold text-center px-4 ${calculateFontSize(selectedPoll ? selectedPoll.caption : "")}`}>
                                     {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
                                 </h2>
                             </div>
@@ -520,13 +520,13 @@ export function Dashboard() {
                                 id="chart-percentages"
                                 className={`flex justify-center items-center transition-opacity duration-500 ${showPercentages ? "opacity-100" : "opacity-0"}`}
                             >
-                                <table className="w-[95%] mx-auto">
+                                <table id="percentages-table" className="w-[95%] mx-auto">
                                     <tbody>
                                         <tr className="w-full">
-                                            <td className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold" style={{ color: "#ffd700" }}>
+                                            <td id="option1-percentage" className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold" style={{ color: "#ffd700" }}>
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option1) * 100).toFixed(0)}%` : ""}
                                             </td>
-                                            <td className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold" style={{ color: "#FA8072" }}>
+                                            <td id="option2-percentage" className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold" style={{ color: "#FA8072" }}>
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option2) * 100).toFixed(0)}%` : ""}
                                             </td>
                                         </tr>
@@ -563,24 +563,25 @@ export function Dashboard() {
                     </Card>
 
                     <Card id="data-table-card" className="flex flex-col">
-                        <CardHeader>
-                            <CardTitle>{showRightColumnContent || isGeneratingReport || !reportContent ? "Your Micro Surveys" : "Generated Report"}</CardTitle>
+                        <CardHeader className={`${showRightColumnContent && !isLoading ? '' : 'hidden'}`}>
+                            <CardTitle id="data-table-title">Your Micro Surveys</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
                             {isLoading ? (
-                                <div className="flex items-center justify-center h-full">
+                                <div id="loading-spinner" className="flex items-center justify-center h-full">
                                     <div className="spinner"></div>
                                 </div>
                             ) : (
                                 <div
+                                    id="data-table-container"
                                     className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
                                         showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
                                     }`}
                                 >
-                                    <div className="p-4 flex flex-col h-full">
-                                        <div className="flex mb-4">
+                                    <div id="data-table-inner" className="p-4 flex flex-col h-full">
+                                        <div id="search-container" className="flex mb-4">
                                             <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="flex-grow" />
-                                            <Button onClick={handleResetSearch} className="ml-2" variant="outline" size="icon">
+                                            <Button id="reset-search-button" onClick={handleResetSearch} className="ml-2" variant="outline" size="icon">
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -616,24 +617,26 @@ export function Dashboard() {
                                 </div>
                             )}
                             <div
+                                id="report-container"
                                 className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
                                     !showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
                                 }`}
                             >
                                 {isGeneratingReport ? (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="loader">Loading...</div> {/* Simple spinner */}
+                                    <div id="report-loading" className="flex items-center justify-center h-full">
+                                        <div className="loader">Loading...</div>
                                     </div>
                                 ) : reportContent || preloadedReport ? (
-                                    <div className="p-4 overflow-auto relative">
+                                    <div id="report-content" className="p-4 overflow-auto relative">
                                         <button
+                                            id="close-report-button"
                                             onClick={() => setShowRightColumnContent(true)}
                                             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
                                         >
                                             &times;
                                         </button>
-                                        <div className="whitespace-pre-wrap">{reportContent || preloadedReport}</div>
-                                        <div className="mt-4 text-sm text-gray-500">
+                                        <div id="report-text" className="whitespace-pre-wrap">{reportContent || preloadedReport}</div>
+                                        <div id="report-disclaimer" className="mt-4 text-sm text-gray-500">
                                             This report was created by an artificial intelligence language model. While we strive for accuracy and quality,
                                             please note that the information and calculations provided may not be entirely error-free or up-to-date. We
                                             recommend independently verifying the content and consulting with professionals for specific advice or information.
@@ -641,8 +644,8 @@ export function Dashboard() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center justify-center h-full">
-                                        <Button onClick={generateReport} className="text-2xl font-bold">
+                                    <div id="generate-report-container" className="flex items-center justify-center h-full">
+                                        <Button id="generate-report-button" onClick={generateReport} className="text-2xl font-bold">
                                             Generate Report
                                         </Button>
                                     </div>

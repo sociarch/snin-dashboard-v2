@@ -19,6 +19,9 @@ import { fetchPollData } from "./fetchPollData";
 // Add this import at the top of the file
 import { X } from "lucide-react";
 
+// Add this import at the top of the file
+import { LogOut } from "lucide-react"; // Add this import
+
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
     console.log("Generating report...");
@@ -510,10 +513,22 @@ export function Dashboard() {
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">
             <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
-                <h1 id="dashboard-title" className="text-2xl font-bold">Snapinput</h1>
+                <div className="flex items-center">
+                    <h1 id="dashboard-title" className="text-xl font-semibold">
+                        <span className="text-[#ffd700]">Snap</span>
+                        <span className="text-white">Input</span>
+                    </h1>
+                </div>
                 <div id="header-controls" className="flex items-center space-x-4">
-                    <ThemeToggle />
-                    <Button id="sign-out-button" onClick={signOut}>Sign Out</Button>
+                    <Button 
+                        id="sign-out-button" 
+                        onClick={signOut} 
+                        variant="ghost" 
+                        size="icon"
+                        title="Sign Out"
+                    >
+                        <LogOut className="h-[1.2rem] w-[1.2rem]" />
+                    </Button>
                 </div>
             </header>
             <main id="dashboard-main" className="flex-grow overflow-hidden p-4 flex flex-col">

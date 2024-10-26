@@ -42,6 +42,7 @@ const calculateFontSize = (text: string) => {
 };
 
 import BotpressEmbed from './BotpressEmbed';
+import { FloatingDock } from "./ui/floating-dock";
 
 export function Dashboard() {
     const { signOut, remainingQuestions } = useAuth();
@@ -722,6 +723,7 @@ export function Dashboard() {
                 </footer>
             </main>
             <BotpressEmbed />
+            <FloatingDock />
         </div>
     );
 }

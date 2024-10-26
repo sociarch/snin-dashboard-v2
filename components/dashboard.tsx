@@ -69,6 +69,9 @@ export function Dashboard() {
     const [isGeneratingReport, setIsGeneratingReport] = useState(false); // New state for loading spinner
     const [preloadedReport, setPreloadedReport] = useState<string | null>(null);
 
+    // Add this new state to control the fade effect
+    const [isFadingOut, setIsFadingOut] = useState(false);
+
     // Add this useEffect hook to fetch data when the component mounts
     useEffect(() => {
         const loadPollData = async () => {
@@ -306,10 +309,24 @@ export function Dashboard() {
         };
     }, []);
 
-    // Handler for button clicks (placeholder for future functionality)
+    // Modify the handleButtonClick function
     const handleButtonClick = (buttonId: string) => {
         if (buttonId === "function1") {
-            setShowRightColumnContent((prev) => !prev);
+            if (showRightColumnContent) {
+                if (selectedPoll) {
+                    // Start fading out
+                    setIsFadingOut(true);
+                    // Wait for fade out to complete before changing content
+                    setTimeout(() => {
+                        setShowRightColumnContent(false);
+                        setIsFadingOut(false);
+                    }, 300); // This should match the transition duration
+                } else {
+                    showAlert("Please select a question before viewing the report", "error");
+                }
+            } else {
+                setShowRightColumnContent(true);
+            }
         } else {
             console.log(`Button ${buttonId} clicked`);
         }
@@ -563,7 +580,11 @@ export function Dashboard() {
                     </Card>
 
                     <Card id="data-table-card" className="flex flex-col">
-                        <CardHeader className={`${showRightColumnContent && !isLoading ? '' : 'hidden'}`}>
+                        <CardHeader 
+                            className={`transition-opacity duration-300 ${
+                                showRightColumnContent && !isLoading ? 'opacity-100' : 'opacity-0'
+                            } ${showRightColumnContent && !isLoading ? '' : 'hidden'}`}
+                        >
                             <CardTitle id="data-table-title">Your Micro Surveys</CardTitle>
                         </CardHeader>
                         <CardContent id="data-table-content" className="flex-grow overflow-hidden relative">
@@ -575,7 +596,7 @@ export function Dashboard() {
                                 <div
                                     id="data-table-container"
                                     className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${
-                                        showRightColumnContent ? "opacity-100" : "opacity-0 pointer-events-none"
+                                        showRightColumnContent && !isFadingOut ? "opacity-100" : "opacity-0 pointer-events-none"
                                     }`}
                                 >
                                     <div id="data-table-inner" className="p-4 flex flex-col h-full">
@@ -660,7 +681,10 @@ export function Dashboard() {
                         <Button 
                             id="function1-button" 
                             onClick={() => handleButtonClick("function1")}
-                            className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                            disabled={showRightColumnContent && !selectedPoll}
+                            className={`flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200 ${
+                                showRightColumnContent && !selectedPoll ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                         >
                             {showRightColumnContent ? "View Report" : "Show Surveys"}
                         </Button>

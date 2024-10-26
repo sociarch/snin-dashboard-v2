@@ -32,6 +32,15 @@ const showAlert = (message: string, type: "error" | "success" | "info") => {
     // You can replace this with a more sophisticated alert system later
 };
 
+// Add this function near the top of your component
+const calculateFontSize = (text: string) => {
+    const wordCount = text.split(" ").length;
+    if (wordCount <= 10) return "text-3xl";
+    if (wordCount <= 15) return "text-2xl";
+    if (wordCount <= 20) return "text-xl";
+    return "text-lg";
+};
+
 export function Dashboard() {
     const { signOut } = useAuth();
 
@@ -500,7 +509,7 @@ export function Dashboard() {
                                 id="chart-title"
                                 className={`flex-1 flex items-center justify-center transition-opacity duration-500 ${showTitle ? "opacity-100" : "opacity-0"}`}
                             >
-                                <h2 className="text-3xl font-bold text-center px-4">
+                                <h2 className={`font-bold text-center px-4 ${calculateFontSize(selectedPoll ? selectedPoll.caption : "")}`}>
                                     {selectedPoll ? selectedPoll.caption : "Click a row to see detailed results"}
                                 </h2>
                             </div>
@@ -570,19 +579,8 @@ export function Dashboard() {
                                 >
                                     <div className="p-4 flex flex-col h-full">
                                         <div className="flex mb-4">
-                                            <Input 
-                                                id="search-input" 
-                                                placeholder="Search..." 
-                                                value={searchTerm} 
-                                                onChange={handleSearch} 
-                                                className="flex-grow"
-                                            />
-                                            <Button 
-                                                onClick={handleResetSearch}
-                                                className="ml-2"
-                                                variant="outline"
-                                                size="icon"
-                                            >
+                                            <Input id="search-input" placeholder="Search..." value={searchTerm} onChange={handleSearch} className="flex-grow" />
+                                            <Button onClick={handleResetSearch} className="ml-2" variant="outline" size="icon">
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -654,21 +652,41 @@ export function Dashboard() {
                     </Card>
                 </div>
             </main>
-            <footer id="dashboard-footer" className="flex-none p-4">
-                <div id="button-container" className="flex justify-center space-x-4">
-                    <Button id="function1-button" onClick={() => handleButtonClick("function1")}>
+            <footer id="dashboard-footer" className="flex-none p-4 bg-card">
+                <div id="button-container" className="flex justify-center space-x-2 max-w-3xl mx-auto">
+                    <Button 
+                        id="function1-button" 
+                        onClick={() => handleButtonClick("function1")}
+                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                    >
                         {showRightColumnContent ? "View Report" : "Show Surveys"}
                     </Button>
-                    <Button id="function2-button" onClick={() => handleButtonClick("function2")}>
+                    <Button 
+                        id="function2-button" 
+                        onClick={() => handleButtonClick("function2")}
+                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
+                    >
                         Function 2
                     </Button>
-                    <Button id="function3-button" onClick={() => handleButtonClick("function3")}>
+                    <Button 
+                        id="function3-button" 
+                        onClick={() => handleButtonClick("function3")}
+                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                    >
                         Function 3
                     </Button>
-                    <Button id="function4-button" onClick={() => handleButtonClick("function4")}>
+                    <Button 
+                        id="function4-button" 
+                        onClick={() => handleButtonClick("function4")}
+                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
+                    >
                         Function 4
                     </Button>
-                    <Button id="function5-button" onClick={() => handleButtonClick("function5")}>
+                    <Button 
+                        id="function5-button" 
+                        onClick={() => handleButtonClick("function5")}
+                        className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+                    >
                         Function 5
                     </Button>
                 </div>

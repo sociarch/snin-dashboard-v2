@@ -8,6 +8,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     user: CognitoUser | null;
     remainingQuestions: number | null;
+    userAttributes: { [key: string]: string } | null;
     signIn: (username: string, password: string) => Promise<void>;
     signOut: () => void;
 }
@@ -18,6 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<CognitoUser | null>(null);
     const [remainingQuestions, setRemainingQuestions] = useState<number | null>(null);
+    const [userAttributes, setUserAttributes] = useState<{ [key: string]: string } | null>(null);
 
     useEffect(() => {
         const currentUser = userPool.getCurrentUser();
@@ -51,13 +53,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setUser(cognitoUser);
                     console.log("Login response:", result);
 
-                    // Retrieve and log all user attributes
                     cognitoUser.getUserAttributes((err, attributes) => {
                         if (err) {
                             console.error("Error getting user attributes:", err);
                             return;
                         }
                         if (attributes) {
+                            const attrs: { [key: string]: string } = {};
+                            attributes.forEach((attr) => {
+                                attrs[attr.getName()] = attr.getValue();
+                            });
+                            setUserAttributes(attrs);
+                            console.log("User attributes:", attrs);
+
                             const qsRemain = attributes.find((attr) => attr.getName() === "custom:qs_remain");
                             if (qsRemain) {
                                 setRemainingQuestions(parseInt(qsRemain.getValue(), 10));
@@ -80,10 +88,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             user.signOut();
             setIsAuthenticated(false);
             setUser(null);
+            setUserAttributes(null);
         }
     };
 
-    return <AuthContext.Provider value={{ isAuthenticated, user, remainingQuestions, signIn, signOut }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ isAuthenticated, user, remainingQuestions, userAttributes, signIn, signOut }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

@@ -528,6 +528,35 @@ export function Dashboard() {
             window.botpress.on("webchat:opened", (conversationId) => {
                 console.log("Webchat Opened");
                 console.log("User Attributes:", latestUserAttributes.current);
+
+                // Add a delay and check if the webchat is ready before sending the event
+                setTimeout(() => {
+                    if (window.botpress && typeof window.botpress.sendEvent === "function") {
+                        try {
+                            // Update Botpress user data
+                            window.botpress.updateUser({
+                                data: {
+                                    firstName: "John",
+                                    lastName: "Doe",
+                                    email: latestUserAttributes.current.email,
+                                },
+                            });
+                            window.botpress.sendEvent({
+                                type: "trigger",
+                                payload: {
+                                    usr: latestUserAttributes.current.email,
+                                    zipnum: latestUserAttributes.current["custom:zipnum"],
+                                    qs_remain: latestUserAttributes.current["custom:qs_remain"],
+                                    time_sent: new Date().toISOString(),
+                                },
+                            });
+                        } catch (error) {
+                            console.error("Error sending event to Botpress:", error);
+                        }
+                    } else {
+                        console.warn("Botpress sendEvent function not available");
+                    }
+                }, 1000); // Wait for 1 second before sending the event
             });
 
             window.botpress.on("webchat:closed", (conversationId) => {

@@ -13,6 +13,15 @@ import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
 import { pollData, PollDataItem } from "./pollData";
 
+// Add this type declaration at the top of your file
+declare global {
+    interface Window {
+        botpress?: {
+            on: (event: string, callback: (data: any) => void) => void;
+        };
+    }
+}
+
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
     console.log("Generating report...");
@@ -497,6 +506,77 @@ export function Dashboard() {
         setSearchTerm("");
         setFilteredData(pollData); // Assuming pollData contains all the original data
     };
+
+    const addBotpressEventListeners = () => {
+        if (window.botpress) {
+            window.botpress.on("*", (event) => {
+                console.log(`Event: ${event.type}`);
+            });
+
+            window.botpress.on("webchat:ready", (conversationId) => {
+                console.log("Webchat Ready");
+            });
+
+            window.botpress.on("webchat:opened", (conversationId) => {
+                console.log("Webchat Opened");
+                console.log("User Attributes:", userAttributes);
+            });
+
+            window.botpress.on("webchat:closed", (conversationId) => {
+                console.log(`Webchat Closed`);
+            });
+
+            window.botpress.on("conversation", (conversationId) => {
+                console.log(`Conversation: ${conversationId}`);
+            });
+
+            window.botpress.on("message", (message) => {
+                console.log(`Message Received: ${message.id}`);
+            });
+
+            window.botpress.on("messageSent", (message) => {
+                console.log(`Message Sent: ${message}`);
+            });
+
+            window.botpress.on("error", (error) => {
+                console.log(`Error: ${error}`);
+            });
+
+            window.botpress.on("webchatVisibility", (visibility) => {
+                console.log(`Visibility: ${visibility}`);
+            });
+
+            window.botpress.on("webchatConfig", (visibility) => {
+                console.log("Webchat Config");
+            });
+
+            window.botpress.on("customEvent", (anyEvent) => {
+                console.log("Received a custom event");
+            });
+        } else {
+            console.error("Botpress is not available yet");
+        }
+    };
+
+    useEffect(() => {
+        // Function to check if Botpress is available and add listeners
+        const initBotpress = () => {
+            if (window.botpress) {
+                addBotpressEventListeners();
+            } else {
+                // If Botpress is not available, check again after a short delay
+                setTimeout(initBotpress, 1000);
+            }
+        };
+
+        // Start the initialization process
+        initBotpress();
+
+        // Cleanup function
+        return () => {
+            // If needed, you can add cleanup logic here
+        };
+    }, []);
 
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">

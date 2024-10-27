@@ -1,26 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FloatingDock } from "@/components/ui/floating-dock";
 import { Input } from "@/components/ui/input";
-import * as d3 from "d3";
-import { pollData, PollDataItem } from "./pollData";
-import { ThemeToggle } from "./theme-toggle";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/contexts/AuthContext";
-
-// Add these new imports
+import * as d3 from "d3";
 import { jsPDF } from "jspdf";
-
-// Add this import at the top of the file
+import { LogOut, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
-
-// Add this import at the top of the file
-import { X } from "lucide-react";
-
-// Add this import at the top of the file
-import { LogOut } from "lucide-react"; // Add this import
+import { pollData, PollDataItem } from "./pollData";
 
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
@@ -45,7 +36,7 @@ const calculateFontSize = (text: string) => {
 };
 
 export function Dashboard() {
-    const { signOut, remainingQuestions } = useAuth();
+    const { signOut, remainingQuestions, userAttributes } = useAuth();
 
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
@@ -736,6 +727,7 @@ export function Dashboard() {
                     </div>
                 </footer>
             </main>
+            <FloatingDock />
         </div>
     );
 }

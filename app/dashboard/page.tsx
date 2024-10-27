@@ -1,13 +1,13 @@
 "use client";
 
 import { Dashboard } from "@/components/dashboard";
-import { FloatingDock } from "@/components/ui/floating-dock";
+import BotpressEmbed from "@/components/BotpressEmbed";
 
 export default function DashboardPage() {
     return (
         <>
             <Dashboard />
-            <FloatingDock />
+            <BotpressEmbed />
         </>
     );
 }

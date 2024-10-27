@@ -44,7 +44,6 @@ const calculateFontSize = (text: string) => {
     return "text-lg";
 };
 
-import BotpressEmbed from "./BotpressEmbed";
 import { FloatingDock } from "./ui/floating-dock";
 
 export function Dashboard() {
@@ -739,7 +738,6 @@ export function Dashboard() {
                     </div>
                 </footer>
             </main>
-            <BotpressEmbed />
             <FloatingDock />
         </div>
     );

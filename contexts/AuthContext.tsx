@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             return;
                         }
                         if (attributes) {
-                            const qsRemain = attributes.find(attr => attr.getName() === 'custom:qs_remain');
+                            const qsRemain = attributes.find((attr) => attr.getName() === "custom:qs_remain");
                             if (qsRemain) {
                                 setRemainingQuestions(parseInt(qsRemain.getValue(), 10));
                             }
@@ -83,11 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, user, remainingQuestions, signIn, signOut }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ isAuthenticated, user, remainingQuestions, signIn, signOut }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

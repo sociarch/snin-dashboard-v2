@@ -19,7 +19,7 @@ export default function LoginPage() {
         setError("");
         try {
             await signIn(email, password);
-            router.push("/dashboard");
+            router.push("/dashboard"); // This should now point to the new DashboardPage
         } catch (err) {
             setError("Failed to log in");
             console.error(err);

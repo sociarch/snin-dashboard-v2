@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect } from "react";
-import { CognitoUser, AuthenticationDetails, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { userPool } from "@/lib/awsConfig";
+import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -30,10 +30,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } else if (session.isValid()) {
                     setIsAuthenticated(true);
                     setUser(currentUser);
+                    // Fetch user attributes when session is valid
+                    fetchUserAttributes(currentUser);
                 }
             });
         }
     }, []);
+
+    const fetchUserAttributes = (cognitoUser: CognitoUser) => {
+        cognitoUser.getUserAttributes((err, attributes) => {
+            if (err) {
+                console.error("Error getting user attributes:", err);
+                return;
+            }
+            if (attributes) {
+                const attrs: { [key: string]: string } = {};
+                attributes.forEach((attr) => {
+                    attrs[attr.getName()] = attr.getValue();
+                });
+                setUserAttributes(attrs);
+                console.log("User attributes:", attrs);
+
+                const qsRemain = attributes.find((attr) => attr.getName() === "custom:qs_remain");
+                if (qsRemain) {
+                    setRemainingQuestions(parseInt(qsRemain.getValue(), 10));
+                }
+            }
+        });
+    };
 
     const signIn = (username: string, password: string): Promise<void> => {
         return new Promise((resolve, reject) => {
@@ -51,28 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 onSuccess: (result) => {
                     setIsAuthenticated(true);
                     setUser(cognitoUser);
-                    console.log("Login response:", result);
-
-                    cognitoUser.getUserAttributes((err, attributes) => {
-                        if (err) {
-                            console.error("Error getting user attributes:", err);
-                            return;
-                        }
-                        if (attributes) {
-                            const attrs: { [key: string]: string } = {};
-                            attributes.forEach((attr) => {
-                                attrs[attr.getName()] = attr.getValue();
-                            });
-                            setUserAttributes(attrs);
-                            console.log("User attributes:", attrs);
-
-                            const qsRemain = attributes.find((attr) => attr.getName() === "custom:qs_remain");
-                            if (qsRemain) {
-                                setRemainingQuestions(parseInt(qsRemain.getValue(), 10));
-                            }
-                        }
-                    });
-
+                    fetchUserAttributes(cognitoUser);
                     resolve();
                 },
                 onFailure: (err) => {

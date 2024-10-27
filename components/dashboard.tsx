@@ -46,6 +46,13 @@ const calculateFontSize = (text: string) => {
 
 export function Dashboard() {
     const { signOut, remainingQuestions, userAttributes } = useAuth();
+    const botpressListenersAdded = useRef(false);
+    const latestUserAttributes = useRef(userAttributes);
+
+    // Update the ref whenever userAttributes changes
+    useEffect(() => {
+        latestUserAttributes.current = userAttributes;
+    }, [userAttributes]);
 
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
@@ -508,18 +515,19 @@ export function Dashboard() {
     };
 
     const addBotpressEventListeners = () => {
-        if (window.botpress) {
+        if (window.botpress && !botpressListenersAdded.current) {
             window.botpress.on("*", (event) => {
                 console.log(`Event: ${event.type}`);
             });
 
             window.botpress.on("webchat:ready", (conversationId) => {
                 console.log("Webchat Ready");
+                console.log("User Attributes:", latestUserAttributes.current);
             });
 
             window.botpress.on("webchat:opened", (conversationId) => {
                 console.log("Webchat Opened");
-                console.log("User Attributes:", userAttributes);
+                console.log("User Attributes:", latestUserAttributes.current);
             });
 
             window.botpress.on("webchat:closed", (conversationId) => {
@@ -553,30 +561,30 @@ export function Dashboard() {
             window.botpress.on("customEvent", (anyEvent) => {
                 console.log("Received a custom event");
             });
-        } else {
-            console.error("Botpress is not available yet");
+
+            botpressListenersAdded.current = true;
         }
     };
 
     useEffect(() => {
-        // Function to check if Botpress is available and add listeners
         const initBotpress = () => {
             if (window.botpress) {
                 addBotpressEventListeners();
             } else {
-                // If Botpress is not available, check again after a short delay
                 setTimeout(initBotpress, 1000);
             }
         };
 
-        // Start the initialization process
         initBotpress();
 
-        // Cleanup function
         return () => {
-            // If needed, you can add cleanup logic here
+            // Cleanup function to remove listeners when component unmounts
+            if (window.botpress && botpressListenersAdded.current) {
+                // Note: Botpress might not have an 'off' method, so we'll need to handle this differently
+                botpressListenersAdded.current = false;
+            }
         };
-    }, []);
+    }, []); // Empty dependency array
 
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">

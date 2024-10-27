@@ -44,7 +44,7 @@ const calculateFontSize = (text: string) => {
     return "text-lg";
 };
 
-import BotpressEmbed from './BotpressEmbed';
+import BotpressEmbed from "./BotpressEmbed";
 import { FloatingDock } from "./ui/floating-dock";
 
 export function Dashboard() {
@@ -520,13 +520,7 @@ export function Dashboard() {
                     </h1>
                 </div>
                 <div id="header-controls" className="flex items-center space-x-4">
-                    <Button 
-                        id="sign-out-button" 
-                        onClick={signOut} 
-                        variant="ghost" 
-                        size="icon"
-                        title="Sign Out"
-                    >
+                    <Button id="sign-out-button" onClick={signOut} variant="ghost" size="icon" title="Sign Out">
                         <LogOut className="h-[1.2rem] w-[1.2rem]" />
                     </Button>
                 </div>
@@ -536,9 +530,7 @@ export function Dashboard() {
                     <Card id="chart-card" className="flex flex-col bg-black text-white w-full max-w-[600px] mx-auto">
                         <CardContent
                             id="chart-content"
-                            className={`flex-grow flex flex-col h-full transition-opacity duration-500 ${
-                                isLoading ? "opacity-0" : "opacity-100"
-                            }`}
+                            className={`flex-grow flex flex-col h-full transition-opacity duration-500 ${isLoading ? "opacity-0" : "opacity-100"}`}
                         >
                             <div
                                 id="chart-title-container"
@@ -558,10 +550,18 @@ export function Dashboard() {
                                 <table id="percentages-table" className="w-[95%] mx-auto">
                                     <tbody>
                                         <tr className="w-full">
-                                            <td id="option1-percentage" className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold" style={{ color: "#ffd700" }}>
+                                            <td
+                                                id="option1-percentage"
+                                                className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold"
+                                                style={{ color: "#ffd700" }}
+                                            >
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option1) * 100).toFixed(0)}%` : ""}
                                             </td>
-                                            <td id="option2-percentage" className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold" style={{ color: "#FA8072" }}>
+                                            <td
+                                                id="option2-percentage"
+                                                className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold"
+                                                style={{ color: "#FA8072" }}
+                                            >
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option2) * 100).toFixed(0)}%` : ""}
                                             </td>
                                         </tr>
@@ -598,10 +598,10 @@ export function Dashboard() {
                     </Card>
 
                     <Card id="data-table-card" className="flex flex-col">
-                        <CardHeader 
-                            className={`transition-opacity duration-300 ${
-                                showRightColumnContent && !isLoading ? 'opacity-100' : 'opacity-0'
-                            } ${showRightColumnContent && !isLoading ? '' : 'hidden'}`}
+                        <CardHeader
+                            className={`transition-opacity duration-300 ${showRightColumnContent && !isLoading ? "opacity-100" : "opacity-0"} ${
+                                showRightColumnContent && !isLoading ? "" : "hidden"
+                            }`}
                         >
                             <CardTitle id="data-table-title">Your Micro Surveys</CardTitle>
                         </CardHeader>
@@ -674,7 +674,9 @@ export function Dashboard() {
                                         >
                                             &times;
                                         </button>
-                                        <div id="report-text" className="whitespace-pre-wrap">{reportContent || preloadedReport}</div>
+                                        <div id="report-text" className="whitespace-pre-wrap">
+                                            {reportContent || preloadedReport}
+                                        </div>
                                         <div id="report-disclaimer" className="mt-4 text-sm text-gray-500">
                                             This report was created by an artificial intelligence language model. While we strive for accuracy and quality,
                                             please note that the information and calculations provided may not be entirely error-free or up-to-date. We
@@ -693,46 +695,46 @@ export function Dashboard() {
                         </CardContent>
                     </Card>
                 </div>
-                
+
                 <footer id="dashboard-footer" className="mt-4">
                     <div id="button-container" className="flex justify-center space-x-2 max-w-3xl mx-auto">
-                        <Button 
-                            id="function1-button" 
+                        <Button
+                            id="function1-button"
                             onClick={() => handleButtonClick("function1")}
                             disabled={showRightColumnContent && !selectedPoll}
                             className={`flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200 ${
-                                showRightColumnContent && !selectedPoll ? 'opacity-50 cursor-not-allowed' : ''
+                                showRightColumnContent && !selectedPoll ? "opacity-50 cursor-not-allowed" : ""
                             }`}
                         >
                             {showRightColumnContent ? "View Report" : "Show Surveys"}
                         </Button>
-                        <Button 
-                            id="function2-button" 
+                        <Button
+                            id="function2-button"
                             onClick={() => handleButtonClick("function2")}
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
                         >
                             Function 2
                         </Button>
-                        <Button 
-                            id="function3-button" 
+                        <Button
+                            id="function3-button"
                             onClick={() => handleButtonClick("function3")}
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
                         >
                             Function 3
                         </Button>
-                        <Button 
-                            id="function4-button" 
+                        <Button
+                            id="function4-button"
                             onClick={() => handleButtonClick("function4")}
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
                         >
                             Function 4
                         </Button>
-                        <Button 
-                            id="function5-button" 
+                        <Button
+                            id="function5-button"
                             onClick={() => handleButtonClick("function5")}
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
                         >
-                            {remainingQuestions !== null ? `Questions Left: ${remainingQuestions}` : 'Loading...'}
+                            {remainingQuestions !== null ? `Questions Left: ${remainingQuestions}` : "Loading..."}
                         </Button>
                     </div>
                 </footer>

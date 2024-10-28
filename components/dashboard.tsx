@@ -13,12 +13,15 @@ import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
 import { pollData, PollDataItem } from "./pollData";
 import axios from "axios";
+import { useRouter } from "next/navigation"; // Add this import at the top
 
 // Add this type declaration at the top of your file
 declare global {
     interface Window {
         botpress?: {
             on: (event: string, callback: (data: any) => void) => void;
+            sendEvent: (event: any) => void;
+            updateUser: (data: any) => void;
         };
     }
 }
@@ -46,6 +49,7 @@ const calculateFontSize = (text: string) => {
 };
 
 export function Dashboard() {
+    const router = useRouter(); // Add this near other hooks
     const { signOut, remainingQuestions, userAttributes, userGroups } = useAuth();
     const botpressListenersAdded = useRef(false);
     const latestUserAttributes = useRef(userAttributes);
@@ -240,11 +244,12 @@ export function Dashboard() {
             .style("fill", (d) => d.data.color)
             .transition()
             .duration(1000)
-            .attrTween("d", function (d) {
-                const interpolate = d3.interpolate({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }, d);
-                return function (t) {
-                    return arc(interpolate(t));
-                };
+            .attrTween("d", function(d) {
+                const interpolate = d3.interpolate(
+                    { startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }, 
+                    d as d3.PieArcDatum<any>
+                );
+                return (t: number) => arc(interpolate(t)) || '';
             });
 
         // Add label paths
@@ -409,7 +414,7 @@ export function Dashboard() {
         }
     };
 
-    const formatText = (text) => {
+    const formatText = (text: string) => {
         const lines = text.split("\n");
         let formattedLines = [];
 
@@ -438,7 +443,7 @@ export function Dashboard() {
         return formattedLines;
     };
 
-    const buildPDF = (text) => {
+    const buildPDF = (text: string) => {
         const pdf = new jsPDF("p", "mm", "a4");
         const editedText =
             text +
@@ -486,8 +491,7 @@ export function Dashboard() {
         return pdf.output("dataurlstring");
     };
 
-    const showReportModal = (title, content) => {
-        // Implement your modal logic here
+    const showReportModal = (title: string, content: string) => {
         console.log("Showing report modal:", title, content);
     };
 
@@ -497,6 +501,7 @@ export function Dashboard() {
     };
 
     const downloadReportPDF = async () => {
+        if (!reportContent) return; // Add null check
         const doc = buildPDF(reportContent);
         const link = document.createElement("a");
         link.href = doc;
@@ -527,7 +532,7 @@ export function Dashboard() {
 
                 // Add a delay and check if the webchat is ready before sending the event
                 setTimeout(() => {
-                    if (window.botpress && typeof window.botpress.sendEvent === "function") {
+                    if (window.botpress && typeof window.botpress.sendEvent === "function" && latestUserAttributes.current) {
                         try {
                             // Update Botpress user data
                             window.botpress.updateUser({
@@ -616,6 +621,17 @@ export function Dashboard() {
         console.log("User groups in Dashboard:", userGroups);
     }, [userGroups]);
 
+    // Update the signOut handler
+    const handleSignOut = async () => {
+        try {
+            await signOut(); // Call the existing signOut from AuthContext
+            router.push('/login'); // Use the Next.js 15 router to redirect
+            router.refresh(); // Ensure the router cache is cleared
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    };
+
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">
             <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
@@ -626,7 +642,13 @@ export function Dashboard() {
                     </h1>
                 </div>
                 <div id="header-controls" className="flex items-center space-x-4">
-                    <Button id="sign-out-button" onClick={signOut} variant="ghost" size="icon" title="Sign Out">
+                    <Button 
+                        id="sign-out-button" 
+                        onClick={handleSignOut} 
+                        variant="ghost" 
+                        size="icon" 
+                        title="Sign Out"
+                    >
                         <LogOut className="h-[1.2rem] w-[1.2rem]" />
                     </Button>
                 </div>

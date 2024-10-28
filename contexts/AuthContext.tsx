@@ -3,6 +3,7 @@
 import { userPool } from "@/lib/awsConfig";
 import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from 'axios';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -11,6 +12,8 @@ interface AuthContextType {
     userAttributes: { [key: string]: string } | null;
     signIn: (username: string, password: string) => Promise<void>;
     signOut: () => void;
+    userGroups: string[];
+    setUserGroups: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<CognitoUser | null>(null);
     const [remainingQuestions, setRemainingQuestions] = useState<number | null>(null);
     const [userAttributes, setUserAttributes] = useState<{ [key: string]: string } | null>(null);
+    const [userGroups, setUserGroups] = useState<string[]>([]);
 
     useEffect(() => {
         const currentUser = userPool.getCurrentUser();
@@ -95,7 +99,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    return <AuthContext.Provider value={{ isAuthenticated, user, remainingQuestions, userAttributes, signIn, signOut }}>{children}</AuthContext.Provider>;
+    useEffect(() => {
+        const fetchUserGroups = async () => {
+            if (userAttributes && userAttributes.sub) {
+                try {
+                    const response = await axios.get(`https://0odsntgafl.execute-api.ap-southeast-1.amazonaws.com/Prod/usergroups?user_sub=${userAttributes.sub}`);
+                    if (response.data.success) {
+                        setUserGroups(response.data.response);
+                        console.log("User groups:", response.data.response);
+                    } else {
+                        console.error("Failed to fetch user groups");
+                    }
+                } catch (error) {
+                    console.error("Error fetching user groups:", error);
+                }
+            }
+        };
+
+        fetchUserGroups();
+    }, [userAttributes]);
+
+    const value = {
+        isAuthenticated,
+        user,
+        remainingQuestions,
+        userAttributes,
+        signIn,
+        signOut,
+        userGroups,
+        setUserGroups,
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

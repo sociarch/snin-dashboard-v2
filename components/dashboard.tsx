@@ -12,6 +12,7 @@ import { LogOut, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
 import { pollData, PollDataItem } from "./pollData";
+import axios from "axios";
 
 // Add this type declaration at the top of your file
 declare global {
@@ -45,14 +46,9 @@ const calculateFontSize = (text: string) => {
 };
 
 export function Dashboard() {
-    const { signOut, remainingQuestions, userAttributes } = useAuth();
+    const { signOut, remainingQuestions, userAttributes, userGroups } = useAuth();
     const botpressListenersAdded = useRef(false);
     const latestUserAttributes = useRef(userAttributes);
-
-    // Update the ref whenever userAttributes changes
-    useEffect(() => {
-        latestUserAttributes.current = userAttributes;
-    }, [userAttributes]);
 
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
@@ -614,6 +610,11 @@ export function Dashboard() {
             }
         };
     }, []); // Empty dependency array
+
+    useEffect(() => {
+        // Log user groups whenever they change
+        console.log("User groups in Dashboard:", userGroups);
+    }, [userGroups]);
 
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">

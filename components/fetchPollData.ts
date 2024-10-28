@@ -14,7 +14,7 @@ export async function fetchPollData(): Promise<PollDataItem[]> {
                 is_user_generated: item.is_user_generated || false,
                 is_sponsored: item.is_sponsored || false,
                 sponsor_id: item.sponsor_id || "",
-                caption: item.caption || "",
+                caption: item.caption || "Would you rather?",
                 option1: item.option1 || "",
                 option2: item.option2 || "",
                 total_responses: item.total_responses || "",

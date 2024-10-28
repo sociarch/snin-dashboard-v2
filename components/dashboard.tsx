@@ -93,13 +93,34 @@ export function Dashboard() {
             poll.resp_option2.toString().includes(searchTerm.toLowerCase())
     );
 
-    // Add this useEffect hook to fetch data when the component mounts
+    // Add a ref to track if data is already loaded
+    const dataLoadedRef = useRef(false);
+
     useEffect(() => {
         const loadPollData = async () => {
+            // Skip if we've already loaded data or don't have userGroups
+            if (dataLoadedRef.current || !userGroups) return;
+
             try {
                 setIsLoading(true);
                 const rawCodaData = await fetchPollData();
-                setPollData(rawCodaData);
+                
+                const filteredPollData = rawCodaData.filter(poll => {
+                    if (!poll.sponsor_id || !userGroups || userGroups.length === 0) {
+                        return false;
+                    }
+                    
+                    const sponsorId = poll.sponsor_id.toLowerCase();
+                    return userGroups.some(group => 
+                        group && sponsorId.includes(group.toLowerCase())
+                    );
+                });
+                
+                console.log('User Groups:', userGroups);
+                console.log('Filtered Poll Data:', filteredPollData);
+                
+                setPollData(filteredPollData);
+                dataLoadedRef.current = true;
             } catch (error) {
                 console.error("Error loading poll data:", error);
             } finally {
@@ -108,7 +129,7 @@ export function Dashboard() {
         };
 
         loadPollData();
-    }, []); // Empty dependency array means this only runs once on mount
+    }, [userGroups]); // Only depend on userGroups
 
     // Modify the handleRowClick to not set isLoading for the table
     const handleRowClick = (poll: PollDataItem) => {
@@ -116,7 +137,7 @@ export function Dashboard() {
             setShowTitle(false);
             setShowPercentages(false);
             setShowAnnotation(false);
-            
+
             setReportContent(null);
             setPreloadedReport(null);
 
@@ -243,12 +264,9 @@ export function Dashboard() {
             .style("fill", (d) => d.data.color)
             .transition()
             .duration(1000)
-            .attrTween("d", function(d) {
-                const interpolate = d3.interpolate(
-                    { startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }, 
-                    d as d3.PieArcDatum<any>
-                );
-                return (t: number) => arc(interpolate(t)) || '';
+            .attrTween("d", function (d) {
+                const interpolate = d3.interpolate({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }, d as d3.PieArcDatum<any>);
+                return (t: number) => arc(interpolate(t)) || "";
             });
 
         // Add label paths
@@ -622,10 +640,10 @@ export function Dashboard() {
     const handleSignOut = async () => {
         try {
             await signOut(); // Call the existing signOut from AuthContext
-            router.push('/login'); // Use the Next.js 15 router to redirect
+            router.push("/login"); // Use the Next.js 15 router to redirect
             router.refresh(); // Ensure the router cache is cleared
         } catch (error) {
-            console.error('Error signing out:', error);
+            console.error("Error signing out:", error);
         }
     };
 
@@ -639,13 +657,7 @@ export function Dashboard() {
                     </h1>
                 </div>
                 <div id="header-controls" className="flex items-center space-x-4">
-                    <Button 
-                        id="sign-out-button" 
-                        onClick={handleSignOut} 
-                        variant="ghost" 
-                        size="icon" 
-                        title="Sign Out"
-                    >
+                    <Button id="sign-out-button" onClick={handleSignOut} variant="ghost" size="icon" title="Sign Out">
                         <LogOut className="h-[1.2rem] w-[1.2rem]" />
                     </Button>
                 </div>

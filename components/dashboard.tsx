@@ -57,7 +57,7 @@ export function Dashboard() {
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filteredData, setFilteredData] = useState<PollDataItem[]>([]);
+    const [pollData, setPollData] = useState<PollDataItem[]>([]);
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
 
@@ -82,28 +82,41 @@ export function Dashboard() {
     // Add this new state to control the fade effect
     const [isFadingOut, setIsFadingOut] = useState(false);
 
+    // Create a derived/computed value for filtered data
+    const filteredData = pollData.filter(
+        (poll) =>
+            !searchTerm || // if no search term, include all items
+            poll.caption.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            poll.option1.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            poll.option2.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            poll.resp_option1.toString().includes(searchTerm.toLowerCase()) ||
+            poll.resp_option2.toString().includes(searchTerm.toLowerCase())
+    );
+
     // Add this useEffect hook to fetch data when the component mounts
     useEffect(() => {
         const loadPollData = async () => {
             try {
                 setIsLoading(true);
-                const data = await fetchPollData();
-                setFilteredData(data);
+                const rawCodaData = await fetchPollData();
+                setPollData(rawCodaData);
             } catch (error) {
                 console.error("Error loading poll data:", error);
-                // You might want to set some error state here
             } finally {
                 setIsLoading(false);
             }
         };
 
         loadPollData();
-    }, []);
+    }, []); // Empty dependency array means this only runs once on mount
 
-    // Handler for when a table row is clicked
+    // Modify the handleRowClick to not set isLoading for the table
     const handleRowClick = (poll: PollDataItem) => {
         if (poll !== selectedPoll) {
-            setIsLoading(true);
+            setShowTitle(false);
+            setShowPercentages(false);
+            setShowAnnotation(false);
+            
             setReportContent(null);
             setPreloadedReport(null);
 
@@ -111,13 +124,10 @@ export function Dashboard() {
                 clearTimeout(timeoutRef.current);
             }
 
-            // Increase the delay before updating the poll
-            timeoutRef.current = setTimeout(() => {
-                setSelectedPoll(poll);
-                setShowRightColumnContent(true);
-                // Start preloading the report
-                preloadReport(poll);
-            }, 500);
+            // Immediately set the selected poll to trigger chart creation
+            setSelectedPoll(poll);
+            setShowRightColumnContent(true);
+            preloadReport(poll);
         }
     };
 
@@ -156,20 +166,9 @@ export function Dashboard() {
         }
     };
 
-    // Handler for search input changes
+    // Modify the search handler to only update searchTerm
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const searchTerm = event.target.value.toLowerCase();
-        setSearchTerm(searchTerm);
-
-        const filtered = filteredData.filter(
-            (poll) =>
-                poll.caption.toLowerCase().includes(searchTerm) ||
-                poll.option1.toLowerCase().includes(searchTerm) ||
-                poll.option2.toLowerCase().includes(searchTerm) ||
-                poll.resp_option1.toString().includes(searchTerm) ||
-                poll.resp_option2.toString().includes(searchTerm)
-        );
-        setFilteredData(filtered);
+        setSearchTerm(event.target.value.toLowerCase());
     };
 
     // Function to update chart dimensions
@@ -293,7 +292,7 @@ export function Dashboard() {
 
     // Effect to create/update chart when selectedPoll or chartDimensions change
     useEffect(() => {
-        if (selectedPoll && chartDimensions.width > 0 && isLoading) {
+        if (selectedPoll && chartDimensions.width > 0) {
             createChart(selectedPoll);
 
             // Reset visibility states
@@ -301,15 +300,14 @@ export function Dashboard() {
             setShowPercentages(false);
             setShowAnnotation(false);
 
-            // Delay the start of fade-in effects and set isLoading to false
+            // Start fade-in effects
             setTimeout(() => {
-                setIsLoading(false);
-                setTimeout(() => setShowTitle(true), 300);
-                setTimeout(() => setShowPercentages(true), 600);
-                setTimeout(() => setShowAnnotation(true), 900);
-            }, 500); // Allow 500ms for chart creation before starting fade-ins
+                setShowTitle(true);
+                setTimeout(() => setShowPercentages(true), 300);
+                setTimeout(() => setShowAnnotation(true), 600);
+            }, 300);
         }
-    }, [selectedPoll, chartDimensions, isLoading]);
+    }, [selectedPoll, chartDimensions]); // Remove isLoading from dependencies
 
     // Clean up the timeout on component unmount
     useEffect(() => {
@@ -509,10 +507,9 @@ export function Dashboard() {
         link.click();
     };
 
-    // Add this new function to handle the reset
+    // Modify the reset search handler
     const handleResetSearch = () => {
         setSearchTerm("");
-        setFilteredData(pollData); // Assuming pollData contains all the original data
     };
 
     const addBotpressEventListeners = () => {

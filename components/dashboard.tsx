@@ -856,7 +856,7 @@ export function Dashboard() {
                         >
                             {showRightColumnContent ? "View Report" : "Show Surveys"}
                         </Button>
-                        <Button
+                        {/* <Button
                             id="function2-button"
                             onClick={() => handleButtonClick("function2")}
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
@@ -876,7 +876,7 @@ export function Dashboard() {
                             className="flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#FA8072] transition-colors duration-200"
                         >
                             Function 4
-                        </Button>
+                        </Button> */}
                         <Button
                             id="function5-button"
                             onClick={() => handleButtonClick("function5")}

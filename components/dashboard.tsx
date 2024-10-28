@@ -82,6 +82,9 @@ export function Dashboard() {
     // Add this new state to control the fade effect
     const [isFadingOut, setIsFadingOut] = useState(false);
 
+    // Add this new state near your other state declarations
+    const [isChartTransitioning, setIsChartTransitioning] = useState(false);
+
     // Create a derived/computed value for filtered data
     const filteredData = pollData.filter(
         (poll) =>
@@ -131,24 +134,35 @@ export function Dashboard() {
         loadPollData();
     }, [userGroups]); // Only depend on userGroups
 
-    // Modify the handleRowClick to not set isLoading for the table
+    // Modify the handleRowClick function
     const handleRowClick = (poll: PollDataItem) => {
         if (poll !== selectedPoll) {
+            // First, hide everything
+            setIsChartTransitioning(true);
             setShowTitle(false);
             setShowPercentages(false);
             setShowAnnotation(false);
-
-            setReportContent(null);
-            setPreloadedReport(null);
-
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-
-            // Immediately set the selected poll to trigger chart creation
-            setSelectedPoll(poll);
-            setShowRightColumnContent(true);
-            preloadReport(poll);
+            
+            // Wait for fade out to complete
+            setTimeout(() => {
+                // Update the poll and preload report while everything is hidden
+                setSelectedPoll(poll);
+                setShowRightColumnContent(true);
+                preloadReport(poll);
+                
+                // Small delay to ensure DOM updates
+                setTimeout(() => {
+                    // End chart transition
+                    setIsChartTransitioning(false);
+                    
+                    // Start the fade-in sequence after chart is ready
+                    setTimeout(() => {
+                        setShowTitle(true);
+                        setTimeout(() => setShowPercentages(true), 150);
+                        setTimeout(() => setShowAnnotation(true), 300);
+                    }, 100);
+                }, 50);
+            }, 300);
         }
     };
 
@@ -310,22 +324,17 @@ export function Dashboard() {
 
     // Effect to create/update chart when selectedPoll or chartDimensions change
     useEffect(() => {
-        if (selectedPoll && chartDimensions.width > 0) {
+        if (selectedPoll && chartDimensions.width > 0 && !isChartTransitioning) {
             createChart(selectedPoll);
 
-            // Reset visibility states
-            setShowTitle(false);
-            setShowPercentages(false);
-            setShowAnnotation(false);
-
-            // Start fade-in effects
+            // Start fade-in effects only after chart transition is complete
             setTimeout(() => {
                 setShowTitle(true);
                 setTimeout(() => setShowPercentages(true), 300);
                 setTimeout(() => setShowAnnotation(true), 600);
-            }, 300);
+            }, 50);
         }
-    }, [selectedPoll, chartDimensions]); // Remove isLoading from dependencies
+    }, [selectedPoll, chartDimensions, isChartTransitioning]); // Add isChartTransitioning to dependencies
 
     // Clean up the timeout on component unmount
     useEffect(() => {
@@ -667,7 +676,9 @@ export function Dashboard() {
                     <Card id="chart-card" className="flex flex-col bg-black text-white w-full max-w-[600px] mx-auto">
                         <CardContent
                             id="chart-content"
-                            className={`flex-grow flex flex-col h-full transition-opacity duration-500 ${isLoading ? "opacity-0" : "opacity-100"}`}
+                            className={`flex-grow flex flex-col h-full transition-opacity duration-300 ${
+                                isChartTransitioning ? "opacity-0" : "opacity-100"
+                            }`}
                         >
                             <div
                                 id="chart-title-container"

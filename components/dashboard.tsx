@@ -751,14 +751,14 @@ export function Dashboard() {
                                             <td
                                                 id="option1-percentage"
                                                 className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold"
-                                                style={{ color: "#ffd700" }}
+                                                style={{ color: "#ffd700", fontFamily: "var(--font-roboto)" }}
                                             >
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option1) * 100).toFixed(0)}%` : ""}
                                             </td>
                                             <td
                                                 id="option2-percentage"
                                                 className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold"
-                                                style={{ color: "#FA8072" }}
+                                                style={{ color: "#FA8072", fontFamily: "var(--font-roboto)" }}
                                             >
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option2) * 100).toFixed(0)}%` : ""}
                                             </td>

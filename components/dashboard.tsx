@@ -143,7 +143,7 @@ export function Dashboard() {
                     const sponsorId = poll.sponsor_id.toLowerCase();
                     const hasMatchingGroup = userGroups.some((group) => {
                         const matches = group && sponsorId.includes(group.toLowerCase());
-                        console.log(`Checking ${sponsorId} against ${group}: ${matches}`);
+                        // console.log(`Checking ${sponsorId} against ${group}: ${matches}`);
                         return matches;
                     });
 
@@ -325,17 +325,22 @@ export function Dashboard() {
             .style("fill", "none")
             .style("stroke", "none");
 
-        // Add labels
+        // Function to truncate text
+        const truncateText = (text: string, maxLength: number) => {
+            if (text.length <= maxLength) return text;
+            return text.slice(0, maxLength - 3) + '...';
+        };
+
+        // Add labels with truncation
         arcs.append("text")
             .append("textPath")
             .attr("xlink:href", (d, i) => `#label-path-${i}`)
-            .attr("startOffset", (d, i) => (i === 0 ? "3%" : "47%"))
-            .text((d) => `${d.data.label}`)
-            .style("text-anchor", (d, i) => (i === 0 ? "start" : "end"))
+            .attr("startOffset", (d, i) => i === 0 ? "5%" : "45%")
+            .text((d) => truncateText(d.data.label, 25)) // Adjust 25 to control max length
+            .style("text-anchor", (d, i) => i === 0 ? "start" : "end")
             .style("font-family", "'Roboto', sans-serif")
-            .style("font-size", "1.1em") // Increased from 0.875em to 1.1em
-            .style("fill", "black") // Changed from white to black
-            .attr("dy", "0.35em")
+            .style("font-size", "1.1em")
+            .style("fill", "black")
             .style("opacity", 0)
             .transition()
             .delay(1000)
@@ -716,7 +721,7 @@ export function Dashboard() {
                 <div className="flex items-center">
                     <h1 id="dashboard-title" className="text-xl font-semibold">
                         <span className="text-[#ffd700]">Snap</span>
-                        <span className="text-white">Input</span>
+                        <span className="dark:text-white text-black">Input</span>
                     </h1>
                 </div>
                 <div id="header-controls" className="flex items-center space-x-4">

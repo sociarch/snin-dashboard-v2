@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"; // Add this import at the top
 import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
 import { PollDataItem } from "./pollData";
+import { BotpressEmbed } from "@/components/BotpressEmbed";
 
 // Add this type declaration at the top of your file
 declare global {
@@ -598,7 +599,7 @@ export function Dashboard() {
             try {
                 // Wait for Botpress to be fully ready
                 await botpressReady;
-                
+
                 // Double check that botpress and its methods are available
                 if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
                     throw new Error("Botpress methods not available");
@@ -614,7 +615,7 @@ export function Dashboard() {
                     data: {
                         firstName: "John",
                         lastName: "Doe",
-                        email: latestUserAttributes.current.email || '',
+                        email: latestUserAttributes.current.email || "",
                     },
                 });
 
@@ -622,13 +623,12 @@ export function Dashboard() {
                 await window.botpress.sendEvent({
                     type: "trigger",
                     payload: {
-                        usr: latestUserAttributes.current.email || '',
-                        zipnum: latestUserAttributes.current["custom:zipnum"] || '',
-                        qs_remain: latestUserAttributes.current["custom:qs_remain"] || '',
+                        usr: latestUserAttributes.current.email || "",
+                        zipnum: latestUserAttributes.current["custom:zipnum"] || "",
+                        qs_remain: latestUserAttributes.current["custom:qs_remain"] || "",
                         time_sent: new Date().toISOString(),
                     },
                 });
-
             } catch (error) {
                 console.warn("Error initializing Botpress chat:", error);
                 console.warn("Current user attributes state:", latestUserAttributes.current);
@@ -663,7 +663,7 @@ export function Dashboard() {
     useEffect(() => {
         let initAttempts = 0;
         const maxAttempts = 10;
-        
+
         const initBotpress = () => {
             if (window.botpress) {
                 addBotpressEventListeners();
@@ -938,6 +938,7 @@ export function Dashboard() {
                 </footer>
             </main>
             <FloatingDock />
+            <BotpressEmbed />
         </div>
     );
 }

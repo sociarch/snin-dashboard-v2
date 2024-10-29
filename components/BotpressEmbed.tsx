@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-export default function BotpressEmbed() {
+export function BotpressEmbed() {
     useEffect(() => {
         // Load the Botpress script
         const script = document.createElement("script");

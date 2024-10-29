@@ -613,22 +613,24 @@ export function Dashboard() {
                 // Update Botpress user data
                 await window.botpress.updateUser({
                     data: {
-                        firstName: "John",
-                        lastName: "Doe",
                         email: latestUserAttributes.current.email || "",
-                    },
-                });
-
-                // Send event with null checks
-                await window.botpress.sendEvent({
-                    type: "trigger",
-                    payload: {
                         usr: latestUserAttributes.current.email || "",
                         zipnum: latestUserAttributes.current["custom:zipnum"] || "",
                         qs_remain: latestUserAttributes.current["custom:qs_remain"] || "",
                         time_sent: new Date().toISOString(),
                     },
                 });
+
+                // Send event with null checks
+                // await window.botpress.sendEvent({
+                //     type: "trigger",
+                //     payload: {
+                //         usr: latestUserAttributes.current.email || "",
+                //         zipnum: latestUserAttributes.current["custom:zipnum"] || "",
+                //         qs_remain: latestUserAttributes.current["custom:qs_remain"] || "",
+                //         time_sent: new Date().toISOString(),
+                //     },
+                // });
             } catch (error) {
                 console.warn("Error initializing Botpress chat:", error);
                 console.warn("Current user attributes state:", latestUserAttributes.current);

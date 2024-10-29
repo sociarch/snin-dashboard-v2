@@ -53,6 +53,12 @@ export function Dashboard() {
     const botpressListenersAdded = useRef(false);
     const latestUserAttributes = useRef(userAttributes);
 
+    // Add useEffect to keep latestUserAttributes current
+    useEffect(() => {
+        latestUserAttributes.current = userAttributes;
+        console.log("Updated latestUserAttributes:", latestUserAttributes.current);
+    }, [userAttributes]);
+
     // State variables
     const [selectedPoll, setSelectedPoll] = useState<PollDataItem | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
@@ -572,106 +578,112 @@ export function Dashboard() {
         setSearchTerm("");
     };
 
+    // Update the addBotpressEventListeners function to add more logging
     const addBotpressEventListeners = () => {
-        if (window.botpress && !botpressListenersAdded.current) {
-            window.botpress.on("*", (event) => {
-                console.log(`Event: ${event.type}`);
+        if (!window.botpress || botpressListenersAdded.current) return;
+
+        // Create a promise that resolves when Botpress is fully ready
+        const botpressReady = new Promise((resolve) => {
+            window.botpress?.on("webchat:ready", () => {
+                console.log("Botpress webchat is ready");
+                console.log("Current user attributes:", latestUserAttributes.current);
+                resolve(true);
             });
+        });
 
-            window.botpress.on("webchat:ready", (conversationId) => {
-                console.log("Webchat Ready");
-                console.log("User Attributes:", latestUserAttributes.current);
-            });
+        window.botpress.on("webchat:opened", async (conversationId) => {
+            console.log("Webchat Opened");
+            console.log("Current user attributes:", latestUserAttributes.current);
 
-            window.botpress.on("webchat:opened", (conversationId) => {
-                console.log("Webchat Opened");
-                console.log("User Attributes:", latestUserAttributes.current);
+            try {
+                // Wait for Botpress to be fully ready
+                await botpressReady;
+                
+                // Double check that botpress and its methods are available
+                if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
+                    throw new Error("Botpress methods not available");
+                }
 
-                // Add a delay and check if the webchat is ready before sending the event
-                setTimeout(() => {
-                    if (window.botpress && typeof window.botpress.sendEvent === "function" && latestUserAttributes.current) {
-                        try {
-                            // Update Botpress user data
-                            window.botpress.updateUser({
-                                data: {
-                                    firstName: "John",
-                                    lastName: "Doe",
-                                    email: latestUserAttributes.current.email,
-                                },
-                            });
-                            window.botpress.sendEvent({
-                                type: "trigger",
-                                payload: {
-                                    usr: latestUserAttributes.current.email,
-                                    zipnum: latestUserAttributes.current["custom:zipnum"],
-                                    qs_remain: latestUserAttributes.current["custom:qs_remain"],
-                                    time_sent: new Date().toISOString(),
-                                },
-                            });
-                        } catch (error) {
-                            console.error("Error sending event to Botpress:", error);
-                        }
-                    } else {
-                        console.warn("Botpress sendEvent function not available");
-                    }
-                }, 1000); // Wait for 1 second before sending the event
-            });
+                // Verify we have user attributes before proceeding
+                if (!latestUserAttributes.current) {
+                    throw new Error("User attributes not available");
+                }
 
-            window.botpress.on("webchat:closed", (conversationId) => {
-                console.log(`Webchat Closed`);
-            });
+                // Update Botpress user data
+                await window.botpress.updateUser({
+                    data: {
+                        firstName: "John",
+                        lastName: "Doe",
+                        email: latestUserAttributes.current.email || '',
+                    },
+                });
 
-            window.botpress.on("conversation", (conversationId) => {
-                console.log(`Conversation: ${conversationId}`);
-            });
+                // Send event with null checks
+                await window.botpress.sendEvent({
+                    type: "trigger",
+                    payload: {
+                        usr: latestUserAttributes.current.email || '',
+                        zipnum: latestUserAttributes.current["custom:zipnum"] || '',
+                        qs_remain: latestUserAttributes.current["custom:qs_remain"] || '',
+                        time_sent: new Date().toISOString(),
+                    },
+                });
 
-            window.botpress.on("message", (message) => {
-                console.log(`Message Received: ${message.id}`);
-            });
+            } catch (error) {
+                console.warn("Error initializing Botpress chat:", error);
+                console.warn("Current user attributes state:", latestUserAttributes.current);
+            }
+        });
 
-            window.botpress.on("messageSent", (message) => {
-                console.log(`Message Sent: ${message}`);
-            });
+        // Add other event listeners
+        window.botpress.on("webchat:closed", (conversationId) => {
+            console.log(`Webchat Closed`);
+        });
 
-            window.botpress.on("error", (error) => {
-                console.log(`Error: ${error}`);
-            });
+        window.botpress.on("conversation", (conversationId) => {
+            console.log(`Conversation: ${conversationId}`);
+        });
 
-            window.botpress.on("webchatVisibility", (visibility) => {
-                console.log(`Visibility: ${visibility}`);
-            });
+        window.botpress.on("message", (message) => {
+            console.log(`Message Received: ${message.id}`);
+        });
 
-            window.botpress.on("webchatConfig", (visibility) => {
-                console.log("Webchat Config");
-            });
+        window.botpress.on("messageSent", (message) => {
+            console.log(`Message Sent: ${message}`);
+        });
 
-            window.botpress.on("customEvent", (anyEvent) => {
-                console.log("Received a custom event");
-            });
+        window.botpress.on("error", (error) => {
+            console.error(`Botpress Error:`, error);
+        });
 
-            botpressListenersAdded.current = true;
-        }
+        botpressListenersAdded.current = true;
     };
 
+    // Update the initialization useEffect
     useEffect(() => {
+        let initAttempts = 0;
+        const maxAttempts = 10;
+        
         const initBotpress = () => {
             if (window.botpress) {
                 addBotpressEventListeners();
-            } else {
+                return;
+            }
+
+            initAttempts++;
+            if (initAttempts < maxAttempts) {
                 setTimeout(initBotpress, 1000);
+            } else {
+                console.warn("Failed to initialize Botpress after maximum attempts");
             }
         };
 
         initBotpress();
 
         return () => {
-            // Cleanup function to remove listeners when component unmounts
-            if (window.botpress && botpressListenersAdded.current) {
-                // Note: Botpress might not have an 'off' method, so we'll need to handle this differently
-                botpressListenersAdded.current = false;
-            }
+            botpressListenersAdded.current = false;
         };
-    }, []); // Empty dependency array
+    }, []);
 
     useEffect(() => {
         // Log user groups whenever they change

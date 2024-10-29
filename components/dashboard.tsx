@@ -9,11 +9,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import * as d3 from "d3";
 import { jsPDF } from "jspdf";
 import { LogOut, X } from "lucide-react";
+import { useRouter } from "next/navigation"; // Add this import at the top
 import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
-import { pollData, PollDataItem } from "./pollData";
-import axios from "axios";
-import { useRouter } from "next/navigation"; // Add this import at the top
+import { PollDataItem } from "./pollData";
 
 // Add this type declaration at the top of your file
 declare global {
@@ -110,46 +109,46 @@ export function Dashboard() {
         const loadPollData = async () => {
             // Skip if we've already loaded data
             if (dataLoadedRef.current) {
-                console.log('Data already loaded, skipping fetch');
+                console.log("Data already loaded, skipping fetch");
                 return;
             }
 
             try {
                 setIsLoading(true);
-                console.log('Starting to fetch poll data');
-                console.log('Current user groups:', userGroups);
-                
+                console.log("Starting to fetch poll data");
+                console.log("Current user groups:", userGroups);
+
                 if (!userGroups || userGroups.length === 0) {
-                    console.log('No user groups available yet, waiting...');
+                    console.log("No user groups available yet, waiting...");
                     return; // Exit early if no user groups
                 }
 
                 const rawData = await fetchPollData();
-                console.log('Fetched raw data:', rawData);
-                
+                console.log("Fetched raw data:", rawData);
+
                 // Filter the data based on user groups
-                const filteredData = rawData.filter(poll => {
+                const filteredData = rawData.filter((poll) => {
                     if (!poll.sponsor_id) {
-                        console.log('Skipping poll with no sponsor_id:', poll);
+                        console.log("Skipping poll with no sponsor_id:", poll);
                         return false;
                     }
-                    
+
                     const sponsorId = poll.sponsor_id.toLowerCase();
-                    const hasMatchingGroup = userGroups.some(group => {
+                    const hasMatchingGroup = userGroups.some((group) => {
                         const matches = group && sponsorId.includes(group.toLowerCase());
                         console.log(`Checking ${sponsorId} against ${group}: ${matches}`);
                         return matches;
                     });
-                    
+
                     return hasMatchingGroup;
                 });
-                
-                console.log('Filtered data:', filteredData);
-                
+
+                console.log("Filtered data:", filteredData);
+
                 if (filteredData.length === 0) {
-                    console.warn('No polls match user groups after filtering');
+                    console.warn("No polls match user groups after filtering");
                 }
-                
+
                 setPollData(filteredData);
                 dataLoadedRef.current = true;
             } catch (error) {
@@ -170,19 +169,19 @@ export function Dashboard() {
             setShowTitle(false);
             setShowPercentages(false);
             setShowAnnotation(false);
-            
+
             // Wait for fade out to complete
             setTimeout(() => {
                 // Update the poll and preload report while everything is hidden
                 setSelectedPoll(poll);
                 setShowRightColumnContent(true);
                 preloadReport(poll);
-                
+
                 // Small delay to ensure DOM updates
                 setTimeout(() => {
                     // End chart transition
                     setIsChartTransitioning(false);
-                    
+
                     // Start the fade-in sequence after chart is ready
                     setTimeout(() => {
                         setShowTitle(true);
@@ -717,9 +716,7 @@ export function Dashboard() {
                     <Card id="chart-card" className="flex flex-col bg-black text-white w-full max-w-[600px] mx-auto">
                         <CardContent
                             id="chart-content"
-                            className={`flex-grow flex flex-col h-full transition-opacity duration-300 ${
-                                isChartTransitioning ? "opacity-0" : "opacity-100"
-                            }`}
+                            className={`flex-grow flex flex-col h-full transition-opacity duration-300 ${isChartTransitioning ? "opacity-0" : "opacity-100"}`}
                         >
                             <div
                                 id="chart-title-container"

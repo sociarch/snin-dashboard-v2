@@ -28,7 +28,7 @@
         "jspdf": "^2.5.2",
         "lucide-react": "^0.453.0",
         "next": "^15.0.1",
-        "next-themes": "^0.3.0",
+        "next-themes": "^0.2.1",
         "os-browserify": "^0.3.0",
         "path-browserify": "^1.0.1",
         "process": "^0.11.10",

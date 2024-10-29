@@ -102,17 +102,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const fetchUserGroups = async () => {
             if (userAttributes && userAttributes.sub) {
+                console.log('Fetching user groups for sub:', userAttributes.sub);
                 try {
-                    const response = await axios.get(`https://0odsntgafl.execute-api.ap-southeast-1.amazonaws.com/Prod/usergroups?user_sub=${userAttributes.sub}`);
+                    const response = await axios.get(
+                        `https://0odsntgafl.execute-api.ap-southeast-1.amazonaws.com/Prod/usergroups?user_sub=${userAttributes.sub}`
+                    );
+                    console.log('User groups API response:', response.data);
+                    
                     if (response.data.success) {
-                        setUserGroups(response.data.response);
-                        console.log("User groups:", response.data.response);
+                        const groups = response.data.response;
+                        console.log('Setting user groups:', groups);
+                        setUserGroups(groups);
                     } else {
-                        console.error("Failed to fetch user groups");
+                        console.error('Failed to fetch user groups:', response.data);
                     }
                 } catch (error) {
-                    console.error("Error fetching user groups:", error);
+                    console.error('Error fetching user groups:', error);
+                    if (axios.isAxiosError(error)) {
+                        console.error('Axios error details:', {
+                            message: error.message,
+                            response: error.response?.data,
+                            status: error.response?.status
+                        });
+                    }
                 }
+            } else {
+                console.log('No user sub available yet');
             }
         };
 

@@ -85,6 +85,12 @@ export function Dashboard() {
     // Add this new state near your other state declarations
     const [isChartTransitioning, setIsChartTransitioning] = useState(false);
 
+    // Add these near your other state declarations
+    const fadeTimeoutRef = useRef<NodeJS.Timeout>();
+    const chartTimeoutRef = useRef<NodeJS.Timeout>();
+    const percentagesTimeoutRef = useRef<NodeJS.Timeout>();
+    const annotationTimeoutRef = useRef<NodeJS.Timeout>();
+
     // Create a derived/computed value for filtered data
     const filteredData = pollData.filter(
         (poll) =>
@@ -99,33 +105,55 @@ export function Dashboard() {
     // Add a ref to track if data is already loaded
     const dataLoadedRef = useRef(false);
 
+    // Modify the useEffect for loading poll data
     useEffect(() => {
         const loadPollData = async () => {
-            // Skip if we've already loaded data or don't have userGroups
-            if (dataLoadedRef.current || !userGroups) return;
+            // Skip if we've already loaded data
+            if (dataLoadedRef.current) {
+                console.log('Data already loaded, skipping fetch');
+                return;
+            }
 
             try {
                 setIsLoading(true);
-                const rawCodaData = await fetchPollData();
+                console.log('Starting to fetch poll data');
+                console.log('Current user groups:', userGroups);
                 
-                const filteredPollData = rawCodaData.filter(poll => {
-                    if (!poll.sponsor_id || !userGroups || userGroups.length === 0) {
+                if (!userGroups || userGroups.length === 0) {
+                    console.log('No user groups available yet, waiting...');
+                    return; // Exit early if no user groups
+                }
+
+                const rawData = await fetchPollData();
+                console.log('Fetched raw data:', rawData);
+                
+                // Filter the data based on user groups
+                const filteredData = rawData.filter(poll => {
+                    if (!poll.sponsor_id) {
+                        console.log('Skipping poll with no sponsor_id:', poll);
                         return false;
                     }
                     
                     const sponsorId = poll.sponsor_id.toLowerCase();
-                    return userGroups.some(group => 
-                        group && sponsorId.includes(group.toLowerCase())
-                    );
+                    const hasMatchingGroup = userGroups.some(group => {
+                        const matches = group && sponsorId.includes(group.toLowerCase());
+                        console.log(`Checking ${sponsorId} against ${group}: ${matches}`);
+                        return matches;
+                    });
+                    
+                    return hasMatchingGroup;
                 });
                 
-                console.log('User Groups:', userGroups);
-                console.log('Filtered Poll Data:', filteredPollData);
+                console.log('Filtered data:', filteredData);
                 
-                setPollData(filteredPollData);
+                if (filteredData.length === 0) {
+                    console.warn('No polls match user groups after filtering');
+                }
+                
+                setPollData(filteredData);
                 dataLoadedRef.current = true;
             } catch (error) {
-                console.error("Error loading poll data:", error);
+                console.error("Error in loadPollData:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -322,41 +350,47 @@ export function Dashboard() {
         return pValue;
     };
 
-    // Effect to create/update chart when selectedPoll or chartDimensions change
+    // Update the chart effect
     useEffect(() => {
         if (selectedPoll && chartDimensions.width > 0 && !isChartTransitioning) {
             createChart(selectedPoll);
 
-            // Start fade-in effects only after chart transition is complete
-            setTimeout(() => {
+            // Store timeouts in refs
+            chartTimeoutRef.current = setTimeout(() => {
                 setShowTitle(true);
-                setTimeout(() => setShowPercentages(true), 300);
-                setTimeout(() => setShowAnnotation(true), 600);
+                percentagesTimeoutRef.current = setTimeout(() => setShowPercentages(true), 300);
+                annotationTimeoutRef.current = setTimeout(() => setShowAnnotation(true), 600);
             }, 50);
         }
-    }, [selectedPoll, chartDimensions, isChartTransitioning]); // Add isChartTransitioning to dependencies
+
+        // Cleanup function
+        return () => {
+            chartTimeoutRef.current && clearTimeout(chartTimeoutRef.current);
+            percentagesTimeoutRef.current && clearTimeout(percentagesTimeoutRef.current);
+            annotationTimeoutRef.current && clearTimeout(annotationTimeoutRef.current);
+        };
+    }, [selectedPoll, chartDimensions, isChartTransitioning]);
 
     // Clean up the timeout on component unmount
     useEffect(() => {
+        const currentTimeout = timeoutRef.current;
         return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
+            if (currentTimeout) {
+                clearTimeout(currentTimeout);
             }
         };
     }, []);
 
-    // Modify the handleButtonClick function
+    // Update the button click handler
     const handleButtonClick = (buttonId: string) => {
         if (buttonId === "function1") {
             if (showRightColumnContent) {
                 if (selectedPoll) {
-                    // Start fading out
                     setIsFadingOut(true);
-                    // Wait for fade out to complete before changing content
-                    setTimeout(() => {
+                    fadeTimeoutRef.current = setTimeout(() => {
                         setShowRightColumnContent(false);
                         setIsFadingOut(false);
-                    }, 300); // This should match the transition duration
+                    }, 300);
                 } else {
                     showAlert("Please select a question before viewing the report", "error");
                 }
@@ -655,6 +689,13 @@ export function Dashboard() {
             console.error("Error signing out:", error);
         }
     };
+
+    // Add cleanup for fade timeout
+    useEffect(() => {
+        return () => {
+            fadeTimeoutRef.current && clearTimeout(fadeTimeoutRef.current);
+        };
+    }, []);
 
     return (
         <div id="dashboard-container" className="flex flex-col h-screen">

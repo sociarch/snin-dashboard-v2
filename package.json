@@ -6,7 +6,10 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "test": "jest --detectOpenHandles",
+        "test:watch": "jest --watch --detectOpenHandles",
+        "test:coverage": "jest --coverage --detectOpenHandles"
     },
     "dependencies": {
         "@radix-ui/react-dialog": "^1.1.2",
@@ -41,13 +44,21 @@
         "url": "^0.11.4"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^16.0.1",
+        "@testing-library/user-event": "^14.5.2",
+        "@types/jest": "^29.5.14",
         "@types/node": "20.1.0",
         "@types/react": "18.2.6",
         "@types/react-dom": "18.2.4",
         "eslint": "8.40.0",
         "eslint-config-next": "13.4.1",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
         "postcss": "^8",
         "tailwindcss": "^3.4.1",
+        "ts-jest": "^29.2.5",
+        "ts-node": "^10.9.2",
         "typescript": "5.0.4"
     }
 }

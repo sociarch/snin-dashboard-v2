@@ -1,0 +1,308 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dashboard Component matches snapshot 1`] = `
+<div>
+  <div
+    class="flex flex-col h-screen"
+    id="dashboard-container"
+  >
+    <header
+      class="flex-none p-4 flex justify-between items-center"
+      id="dashboard-header"
+    >
+      <div
+        class="flex items-center"
+      >
+        <h1
+          class="text-xl font-semibold"
+          id="dashboard-title"
+        >
+          <span
+            class="text-[#ffd700]"
+          >
+            Snap
+          </span>
+          <span
+            class="dark:text-white text-black"
+          >
+            Input
+          </span>
+        </h1>
+      </div>
+      <div
+        class="flex items-center space-x-4"
+        id="header-controls"
+      >
+        <button
+          class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+          id="sign-out-button"
+          title="Sign Out"
+        >
+          <svg
+            class="lucide lucide-log-out h-[1.2rem] w-[1.2rem]"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+            />
+            <polyline
+              points="16 17 21 12 16 7"
+            />
+            <line
+              x1="21"
+              x2="9"
+              y1="12"
+              y2="12"
+            />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <main
+      class="flex-grow overflow-hidden p-4 flex flex-col"
+      id="dashboard-main"
+    >
+      <div
+        class="grid grid-cols-1 lg:grid-cols-[minmax(auto,600px)_1fr] gap-4 flex-grow"
+        id="dashboard-grid"
+      >
+        <div
+          class="rounded-xl border shadow flex flex-col bg-black text-white w-full max-w-[600px] mx-auto"
+          id="chart-card"
+        >
+          <div
+            class="p-6 pt-0 flex-grow flex flex-col h-full transition-opacity duration-300 opacity-100"
+            id="chart-content"
+          >
+            <div
+              class="flex-1 flex items-center justify-center transition-opacity duration-500 opacity-0"
+              id="chart-title-container"
+            >
+              <h2
+                class="font-bold text-center px-4 text-3xl"
+                id="chart-title"
+              >
+                Click a row to see detailed results
+              </h2>
+            </div>
+            <div
+              class="flex-1 flex justify-center items-center"
+              id="chart-container"
+            />
+            <div
+              class="flex justify-center items-center transition-opacity duration-500 opacity-0"
+              id="chart-percentages"
+            >
+              <table
+                class="w-[95%] mx-auto"
+                id="percentages-table"
+              >
+                <tbody>
+                  <tr
+                    class="w-full"
+                  >
+                    <td
+                      class="w-1/2 text-left font-['Roboto'] text-[2em] font-bold"
+                      id="option1-percentage"
+                      style="color: rgb(255, 215, 0); font-family: var(--font-roboto);"
+                    />
+                    <td
+                      class="w-1/2 text-right font-['Roboto'] text-[2em] font-bold"
+                      id="option2-percentage"
+                      style="color: rgb(250, 128, 114); font-family: var(--font-roboto);"
+                    />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div
+              class="flex justify-center items-center py-4 transition-opacity duration-500 opacity-0"
+              id="chart-annotation"
+            >
+              <span
+                class="text-[1.5em] text-center"
+                id="chart-footer-center"
+              >
+                Most people prefer
+                 
+              </span>
+            </div>
+            <div
+              class="flex-1 flex justify-between items-end px-2"
+              id="chart-footer"
+            >
+              <span
+                class="text-xs"
+                id="chart-footer-left"
+              >
+                snapinput.com
+              </span>
+              <span
+                class="text-xs"
+                id="chart-footer-right"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="rounded-xl border bg-card text-card-foreground shadow flex flex-col"
+          id="data-table-card"
+        >
+          <div
+            class="flex-col space-y-1.5 p-6 transition-opacity duration-300 opacity-0 hidden"
+          >
+            <h3
+              class="font-semibold leading-none tracking-tight"
+              id="data-table-title"
+            >
+              Your Micro Surveys
+            </h3>
+          </div>
+          <div
+            class="p-6 pt-0 flex-grow overflow-hidden relative"
+            id="data-table-content"
+          >
+            <div
+              class="flex items-center justify-center h-full"
+              id="loading-spinner"
+            >
+              <div
+                class="spinner"
+              />
+            </div>
+            <div
+              class="absolute inset-0 flex flex-col transition-opacity duration-300 opacity-0 pointer-events-none"
+              id="report-container"
+            >
+              <div
+                class="flex items-center justify-center h-full"
+                id="generate-report-container"
+              >
+                <button
+                  class="inline-flex items-center justify-center rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-2xl font-bold"
+                  id="generate-report-button"
+                >
+                  Generate Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer
+        class="mt-4"
+        id="dashboard-footer"
+      >
+        <div
+          class="flex justify-center space-x-2 max-w-3xl mx-auto"
+          id="button-container"
+        >
+          <button
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200 opacity-50"
+            id="function1-button"
+          >
+            View Report
+          </button>
+          <button
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 flex-1 bg-black hover:bg-gray-800 text-white border-4 border-gray-600 hover:border-[#ffd700] transition-colors duration-200"
+            id="function5-button"
+          >
+            Questions Left: 5
+          </button>
+        </div>
+      </footer>
+    </main>
+    <div
+      class="fixed bottom-4 left-4 flex items-center space-x-2"
+    >
+      <button
+        aria-controls="radix-:r1a:"
+        aria-expanded="false"
+        aria-haspopup="dialog"
+        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+        data-state="closed"
+        type="button"
+      >
+        <svg
+          class="lucide lucide-info h-[1.2rem] w-[1.2rem]"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+          />
+          <path
+            d="M12 16v-4"
+          />
+          <path
+            d="M12 8h.01"
+          />
+        </svg>
+      </button>
+      <button
+        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+      >
+        <svg
+          class="lucide lucide-sun h-[1.2rem] w-[1.2rem]"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="4"
+          />
+          <path
+            d="M12 2v2"
+          />
+          <path
+            d="M12 20v2"
+          />
+          <path
+            d="m4.93 4.93 1.41 1.41"
+          />
+          <path
+            d="m17.66 17.66 1.41 1.41"
+          />
+          <path
+            d="M2 12h2"
+          />
+          <path
+            d="M20 12h2"
+          />
+          <path
+            d="m6.34 17.66-1.41 1.41"
+          />
+          <path
+            d="m19.07 4.93-1.41 1.41"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+`;

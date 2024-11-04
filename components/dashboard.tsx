@@ -56,7 +56,7 @@ export function Dashboard() {
     // Add useEffect to keep latestUserAttributes current
     useEffect(() => {
         latestUserAttributes.current = userAttributes;
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
             console.log("Updated latestUserAttributes:", latestUserAttributes.current);
         }
     }, [userAttributes]);

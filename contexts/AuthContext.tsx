@@ -5,18 +5,24 @@ import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from 'axios';
 
-interface AuthContextType {
-    isAuthenticated: boolean;
-    user: CognitoUser | null;
+export interface AuthContextType {
+    signOut: () => Promise<void>;
     remainingQuestions: number | null;
-    userAttributes: { [key: string]: string } | null;
-    signIn: (username: string, password: string) => Promise<void>;
-    signOut: () => void;
+    userAttributes: Record<string, any>;
     userGroups: string[];
-    setUserGroups: React.Dispatch<React.SetStateAction<string[]>>;
+    isAuthenticated: boolean;
+    user: any;
+    signIn: (username: string, password: string) => Promise<void>;
+    signUp: (username: string, password: string, attributes: Record<string, string>) => Promise<void>;
+    confirmSignUp: (username: string, code: string) => Promise<void>;
+    resendConfirmationCode: (username: string) => Promise<void>;
+    forgotPassword: (username: string) => Promise<void>;
+    forgotPasswordSubmit: (username: string, code: string, newPassword: string) => Promise<void>;
+    updateUserAttributes: (attributes: Record<string, string>) => Promise<void>;
+    loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -136,15 +142,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchUserGroups();
     }, [userAttributes]);
 
-    const value = {
+    const value: AuthContextType = {
         isAuthenticated,
         user,
         remainingQuestions,
-        userAttributes,
+        userAttributes: userAttributes || {},
         signIn,
-        signOut,
+        signOut: () => {
+            signOut();
+            return Promise.resolve();
+        },
         userGroups,
-        setUserGroups,
+        signUp: async () => {},
+        confirmSignUp: async () => {},
+        resendConfirmationCode: async () => {},
+        forgotPassword: async () => {},
+        forgotPasswordSubmit: async () => {},
+        updateUserAttributes: async () => {},
+        loading: false
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,24 +1,39 @@
 import '@testing-library/jest-dom';
+import axios from 'axios';
 
-// Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+jest.mock('axios');
+
+declare global {
+  interface Window {
+    botpress?: {
+      on: jest.Mock;
+      sendEvent: jest.Mock;
+      updateUser: jest.Mock;
+    };
+  }
+}
 
 // Mock window.botpress
-Object.defineProperty(window, 'botpress', {
-  value: {
-    on: jest.fn(),
-    sendEvent: jest.fn(),
-    updateUser: jest.fn(),
-  },
-  writable: true,
-});
+global.window.botpress = {
+  on: jest.fn(),
+  sendEvent: jest.fn(),
+  updateUser: jest.fn()
+};
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 // Mock fetch
-global.fetch = jest.fn();
+global.fetch = jest.fn(() => 
+  Promise.resolve({
+    json: () => Promise.resolve({}),
+    ok: true
+  })
+) as jest.Mock;
 
 // Mock console methods
 global.console = {

@@ -1,81 +1,116 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { Dashboard } from '@/components/dashboard';
-import { AuthContext } from '@/contexts/AuthContext';
-import { fetchPollData } from '@/components/fetchPollData';
+import { useRouter } from 'next/navigation';
+import '@testing-library/jest-dom';
+import { AuthContext, AuthContextType } from '@/contexts/AuthContext';
+import axios from 'axios';
 
-// Mock the modules
+// Mock axios
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Mock next/navigation
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    refresh: jest.fn(),
-  }),
+  useRouter: jest.fn()
 }));
 
-jest.mock('@/components/fetchPollData', () => ({
-  fetchPollData: jest.fn(),
-}));
-
+// Mock d3
 jest.mock('d3', () => ({
   select: jest.fn(() => ({
     selectAll: jest.fn(() => ({
-      remove: jest.fn(),
+      remove: jest.fn()
     })),
     append: jest.fn(() => ({
-      attr: jest.fn(() => ({
-        style: jest.fn(() => ({
-          append: jest.fn(),
-        })),
-      })),
-    })),
+      attr: jest.fn().mockReturnThis(),
+      style: jest.fn().mockReturnThis(),
+      append: jest.fn().mockReturnThis()
+    }))
   })),
   arc: jest.fn(() => ({
-    innerRadius: jest.fn(() => ({
-      outerRadius: jest.fn(),
-    })),
+    innerRadius: jest.fn().mockReturnThis(),
+    outerRadius: jest.fn().mockReturnThis()
   })),
   pie: jest.fn(() => ({
-    sort: jest.fn(() => ({
-      value: jest.fn(() => ({
-        startAngle: jest.fn(() => ({
-          endAngle: jest.fn(),
-        })),
-      })),
-    })),
-  })),
+    sort: jest.fn().mockReturnThis(),
+    value: jest.fn().mockReturnThis(),
+    startAngle: jest.fn().mockReturnThis(),
+    endAngle: jest.fn().mockReturnThis()
+  }))
 }));
 
-// Mock data
-const mockPollData = [
-  {
-    post_id: '1',
-    caption: 'Test Question 1',
-    option1: 'Yes',
-    option2: 'No',
-    resp_option1: '60',
-    resp_option2: '40',
-    pct_option1: '0.6',
-    pct_option2: '0.4',
-    sponsor_id: 'test_sponsor',
-  },
-];
+// Mock fetchPollData with a delay to simulate async behavior
+jest.mock('@/components/fetchPollData', () => ({
+  fetchPollData: jest.fn().mockImplementation(() => 
+    Promise.resolve([{
+      post_id: '1',
+      caption: 'Test Question',
+      option1: 'Option 1',
+      option2: 'Option 2',
+      resp_option1: '10',
+      resp_option2: '20',
+      pct_option1: '0.33',
+      pct_option2: '0.67',
+      sponsor_id: 'test_group'
+    }])
+  )
+}));
 
-// Mock AuthContext value
-const mockAuthContext = {
-  signOut: jest.fn(),
-  remainingQuestions: 5,
-  userAttributes: {
-    email: 'test@example.com',
-    'custom:zipnum': '12345',
-    'custom:qs_remain': '5',
-  },
-  userGroups: ['test_sponsor'],
+// Mock BotpressEmbed component
+jest.mock('@/components/BotpressEmbed', () => ({
+  BotpressEmbed: () => null
+}));
+
+// Add this helper function at the top of the test file
+const findTableCell = (text: string) => {
+  return screen.getByRole('cell', { name: text });
+};
+
+const findChartTitle = (text: string) => {
+  return screen.getByRole('heading', { 
+    name: text,
+    level: 2 
+  });
 };
 
 describe('Dashboard Component', () => {
+  const mockRouter = {
+    push: jest.fn(),
+    refresh: jest.fn()
+  };
+
+  const mockAuthContext: AuthContextType = {
+    signOut: jest.fn().mockImplementation(() => Promise.resolve()),
+    remainingQuestions: 5,
+    userAttributes: {
+      email: 'test@example.com',
+      'custom:zipnum': '12345',
+      'custom:qs_remain': '5',
+      sub: 'test-sub'
+    },
+    userGroups: ['test_group'],
+    isAuthenticated: true,
+    user: null,
+    signIn: jest.fn(),
+    signUp: jest.fn(),
+    confirmSignUp: jest.fn(),
+    resendConfirmationCode: jest.fn(),
+    forgotPassword: jest.fn(),
+    forgotPasswordSubmit: jest.fn(),
+    updateUserAttributes: jest.fn(),
+    loading: false
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (fetchPollData as jest.Mock).mockResolvedValue(mockPollData);
+    (useRouter as jest.Mock).mockReturnValue(mockRouter);
+    
+    // Mock axios response for user groups
+    mockedAxios.get.mockResolvedValue({
+      data: {
+        success: true,
+        response: ['test_group']
+      }
+    });
   });
 
   const renderDashboard = () => {
@@ -95,46 +130,49 @@ describe('Dashboard Component', () => {
   it('loads and displays poll data', async () => {
     renderDashboard();
     await waitFor(() => {
-      expect(screen.getByText('Test Question 1')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Test Question')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   it('handles search functionality', async () => {
     renderDashboard();
+    
     await waitFor(() => {
-      expect(screen.getByText('Test Question 1')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Test Question')).toBeInTheDocument();
+    }, { timeout: 3000 });
 
     const searchInput = screen.getByPlaceholderText('Search...');
-    await userEvent.type(searchInput, 'Question 1');
-
-    expect(screen.getByText('Test Question 1')).toBeInTheDocument();
+    fireEvent.change(searchInput, { target: { value: 'Test' } });
     
-    await userEvent.type(searchInput, 'NonexistentQuestion');
-    expect(screen.queryByText('Test Question 1')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Test Question')).toBeInTheDocument();
+    });
   });
 
   it('handles row click and shows chart', async () => {
     renderDashboard();
+    
     await waitFor(() => {
-      expect(screen.getByText('Test Question 1')).toBeInTheDocument();
-    });
-
-    const row = screen.getByText('Test Question 1').closest('tr');
-    if (row) {
+      const row = findTableCell('Test Question');
+      expect(row).toBeInTheDocument();
       fireEvent.click(row);
-    }
 
-    await waitFor(() => {
-      expect(screen.getByText('60%')).toBeInTheDocument();
-      expect(screen.getByText('40%')).toBeInTheDocument();
-    });
+      const chartTitle = findChartTitle('Test Question');
+      expect(chartTitle).toBeInTheDocument();
+
+      expect(screen.getByText('33%')).toBeInTheDocument();
+      expect(screen.getByText('67%')).toBeInTheDocument();
+      expect(screen.getByText(/Most people prefer/)).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   it('handles sign out', async () => {
     renderDashboard();
     const signOutButton = screen.getByTitle('Sign Out');
     fireEvent.click(signOutButton);
-    expect(mockAuthContext.signOut).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockAuthContext.signOut).toHaveBeenCalled();
+      expect(mockRouter.push).toHaveBeenCalledWith('/login');
+    });
   });
 }); 

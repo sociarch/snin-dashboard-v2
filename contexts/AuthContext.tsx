@@ -111,7 +111,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     
                     if (response.data.success) {
                         const groups = response.data.response;
-                        console.log('Setting user groups:', groups);
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log('Setting user groups:', groups);
+                        }
                         setUserGroups(groups);
                     } else {
                         console.error('Failed to fetch user groups:', response.data);

@@ -5,20 +5,22 @@ const API_ENDPOINT = "https://0odsntgafl.execute-api.ap-southeast-1.amazonaws.co
 
 export async function fetchPollData(): Promise<PollDataItem[]> {
     try {
-        console.log('Fetching poll data from:', API_ENDPOINT);
+        console.log("Fetching poll data from:", API_ENDPOINT);
         const response = await axios.get(API_ENDPOINT);
-        console.log('Raw API response:', response.data);
+        if (process.env.NODE_ENV === "development") {
+            console.log("Raw API response:", response.data);
+        }
 
         if (!response.data) {
-            throw new Error('No data received from API');
+            throw new Error("No data received from API");
         }
 
         if (!response.data.success) {
-            throw new Error(`API returned success: false - ${response.data.message || 'No error message provided'}`);
+            throw new Error(`API returned success: false - ${response.data.message || "No error message provided"}`);
         }
 
         if (!Array.isArray(response.data.response)) {
-            throw new Error('API response is not an array');
+            throw new Error("API response is not an array");
         }
 
         const pollItems = response.data.response.map((item: any) => ({
@@ -42,15 +44,15 @@ export async function fetchPollData(): Promise<PollDataItem[]> {
             count_skip: item.count_skip || 0,
         }));
 
-        console.log('Processed poll items:', pollItems);
+        // console.log('Processed poll items:', pollItems);
         return pollItems;
     } catch (error) {
         console.error("Error fetching poll data:", error);
         if (axios.isAxiosError(error)) {
-            console.error('Axios error details:', {
+            console.error("Axios error details:", {
                 message: error.message,
                 response: error.response?.data,
-                status: error.response?.status
+                status: error.response?.status,
             });
         }
         throw error;

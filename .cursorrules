@@ -9,6 +9,7 @@
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 - Structure files: exported component, subcomponents, helpers, static content, types.
 - Do not rewrite existing code unless absolutely necessary.
+- Unless otherwise specified, console logs should only be used for dev but not in production.
   
   Naming Conventions
 

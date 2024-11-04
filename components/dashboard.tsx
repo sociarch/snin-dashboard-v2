@@ -56,7 +56,9 @@ export function Dashboard() {
     // Add useEffect to keep latestUserAttributes current
     useEffect(() => {
         latestUserAttributes.current = userAttributes;
-        console.log("Updated latestUserAttributes:", latestUserAttributes.current);
+        if (process.env.NODE_ENV === 'development') {
+            console.log("Updated latestUserAttributes:", latestUserAttributes.current);
+        }
     }, [userAttributes]);
 
     // State variables
@@ -112,43 +114,25 @@ export function Dashboard() {
     // Modify the useEffect for loading poll data
     useEffect(() => {
         const loadPollData = async () => {
-            // Skip if we've already loaded data
-            if (dataLoadedRef.current) {
-                console.log("Data already loaded, skipping fetch");
-                return;
-            }
+            if (dataLoadedRef.current) return;
 
             try {
                 setIsLoading(true);
-                console.log("Starting to fetch poll data");
-                console.log("Current user groups:", userGroups);
 
                 if (!userGroups || userGroups.length === 0) {
                     console.log("No user groups available yet, waiting...");
-                    return; // Exit early if no user groups
+                    return;
                 }
 
                 const rawData = await fetchPollData();
-                console.log("Fetched raw data:", rawData);
 
                 // Filter the data based on user groups
                 const filteredData = rawData.filter((poll) => {
-                    if (!poll.sponsor_id) {
-                        console.log("Skipping poll with no sponsor_id:", poll);
-                        return false;
-                    }
+                    if (!poll.sponsor_id) return false;
 
                     const sponsorId = poll.sponsor_id.toLowerCase();
-                    const hasMatchingGroup = userGroups.some((group) => {
-                        const matches = group && sponsorId.includes(group.toLowerCase());
-                        // console.log(`Checking ${sponsorId} against ${group}: ${matches}`);
-                        return matches;
-                    });
-
-                    return hasMatchingGroup;
+                    return userGroups.some((group) => group && sponsorId.includes(group.toLowerCase()));
                 });
-
-                console.log("Filtered data:", filteredData);
 
                 if (filteredData.length === 0) {
                     console.warn("No polls match user groups after filtering");
@@ -164,7 +148,7 @@ export function Dashboard() {
         };
 
         loadPollData();
-    }, [userGroups]); // Only depend on userGroups
+    }, [userGroups]);
 
     // Modify the handleRowClick function
     const handleRowClick = (poll: PollDataItem) => {
@@ -204,10 +188,11 @@ export function Dashboard() {
 
     // Function to preload the report
     const preloadReport = async (poll: PollDataItem) => {
-        const promptIntro = "You are a data scientist and analyst..."; // Your existing prompt intro
+        console.log("Preloading AI report for poll:", poll.caption);
+        const promptIntro = "You are a data scientist and analyst...";
         let questionData = Object.values(poll).join(",");
-        let reportInstructions = ". Please write a concise report..."; // Your existing instructions
-        let additionalGuidelines = " Follow-up questions should not be..."; // Your existing guidelines
+        let reportInstructions = ". Please write a concise report...";
+        let additionalGuidelines = " Follow-up questions should not be...";
         let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
 
         const options = {
@@ -229,11 +214,13 @@ export function Dashboard() {
         };
 
         try {
+            console.log("Sending preload AI report request");
             const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
             const data = await response.json();
+            console.log("Preloaded AI report generated successfully");
             setPreloadedReport(data.response);
         } catch (err) {
-            console.error("Error preloading report:", err);
+            console.error("Error preloading AI report:", err);
         }
     };
 
@@ -428,22 +415,24 @@ export function Dashboard() {
         }
 
         setIsGeneratingReport(true);
+        console.log("Requesting AI report generation for poll:", selectedPoll.caption);
 
         try {
-            // First check if we have a preloaded report for the current selection
             if (preloadedReport) {
+                console.log("Using preloaded report");
                 setReportContent(preloadedReport);
-                setPreloadedReport(null); // Clear preloaded report after using it
+                setPreloadedReport(null);
                 setShowRightColumnContent(false);
                 return;
             }
 
-            let promptIntro = "You are a data scientist and analyst..."; // Your existing prompt
+            let promptIntro = "You are a data scientist and analyst...";
             let questionData = Object.values(selectedPoll).join(",");
-            let reportInstructions = ". Please write a concise report..."; // Your existing instructions
-            let additionalGuidelines = " Follow-up questions should not be..."; // Your existing guidelines
+            let reportInstructions = ". Please write a concise report...";
+            let additionalGuidelines = " Follow-up questions should not be...";
             let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
 
+            console.log("Sending AI report request to API");
             const options = {
                 method: "POST",
                 headers: {
@@ -464,10 +453,11 @@ export function Dashboard() {
 
             const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
             const data = await response.json();
+            console.log("AI report generation completed successfully");
             setReportContent(data.response);
             setShowRightColumnContent(false);
         } catch (err) {
-            console.error("Error generating report:", err);
+            console.error("Error generating AI report:", err);
             showAlert("Error generating report", "error");
         } finally {
             setIsGeneratingReport(false);
@@ -475,12 +465,11 @@ export function Dashboard() {
     };
 
     const showReportModal = (title: string, content: string) => {
-        console.log("Showing report modal:", title, content);
+        // Implementation without logging
     };
 
     const copyReportToClipboard = async () => {
-        // Implement clipboard copy logic here
-        console.log("Copying report to clipboard:", reportContent);
+        // Implement clipboard copy logic here without logging
     };
 
     // Modify the reset search handler
@@ -492,34 +481,24 @@ export function Dashboard() {
     const addBotpressEventListeners = () => {
         if (!window.botpress || botpressListenersAdded.current) return;
 
-        // Create a promise that resolves when Botpress is fully ready
         const botpressReady = new Promise((resolve) => {
             window.botpress?.on("webchat:ready", () => {
-                console.log("Botpress webchat is ready");
-                console.log("Current user attributes:", latestUserAttributes.current);
                 resolve(true);
             });
         });
 
         window.botpress.on("webchat:opened", async (conversationId) => {
-            console.log("Webchat Opened");
-            console.log("Current user attributes:", latestUserAttributes.current);
-
             try {
-                // Wait for Botpress to be fully ready
                 await botpressReady;
 
-                // Double check that botpress and its methods are available
                 if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
                     throw new Error("Botpress methods not available");
                 }
 
-                // Verify we have user attributes before proceeding
                 if (!latestUserAttributes.current) {
                     throw new Error("User attributes not available");
                 }
 
-                // Update Botpress user data
                 await window.botpress.updateUser({
                     data: {
                         email: latestUserAttributes.current.email || "",
@@ -529,40 +508,15 @@ export function Dashboard() {
                         time_sent: new Date().toISOString(),
                     },
                 });
-
-                // Send event with null checks
-                // await window.botpress.sendEvent({
-                //     type: "trigger",
-                //     payload: {
-                //         usr: latestUserAttributes.current.email || "",
-                //         zipnum: latestUserAttributes.current["custom:zipnum"] || "",
-                //         qs_remain: latestUserAttributes.current["custom:qs_remain"] || "",
-                //         time_sent: new Date().toISOString(),
-                //     },
-                // });
             } catch (error) {
-                console.warn("Error initializing Botpress chat:", error);
-                console.warn("Current user attributes state:", latestUserAttributes.current);
+                console.error("Error initializing Botpress chat:", error);
             }
         });
 
-        // Add other event listeners
-        window.botpress.on("webchat:closed", (conversationId) => {
-            console.log(`Webchat Closed`);
-        });
-
-        window.botpress.on("conversation", (conversationId) => {
-            console.log(`Conversation: ${conversationId}`);
-        });
-
-        window.botpress.on("message", (message) => {
-            console.log(`Message Received: ${message.id}`);
-        });
-
-        window.botpress.on("messageSent", (message) => {
-            console.log(`Message Sent: ${message}`);
-        });
-
+        window.botpress.on("webchat:closed", () => {});
+        window.botpress.on("conversation", () => {});
+        window.botpress.on("message", () => {});
+        window.botpress.on("messageSent", () => {});
         window.botpress.on("error", (error) => {
             console.error(`Botpress Error:`, error);
         });

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/contexts/AuthContext";
 import * as d3 from "d3";
-import { jsPDF } from "jspdf";
 import { LogOut, X } from "lucide-react";
 import { useRouter } from "next/navigation"; // Add this import at the top
 import { useEffect, useRef, useState } from "react";
@@ -81,7 +80,6 @@ export function Dashboard() {
     const [isTransitioning, setIsTransitioning] = useState(false);
 
     const [reportContent, setReportContent] = useState<string | null>(null);
-    const [pdfFileName, setPdfFileName] = useState("");
     const [isGeneratingReport, setIsGeneratingReport] = useState(false); // New state for loading spinner
     const [preloadedReport, setPreloadedReport] = useState<string | null>(null);
 
@@ -332,16 +330,16 @@ export function Dashboard() {
         // Function to truncate text
         const truncateText = (text: string, maxLength: number) => {
             if (text.length <= maxLength) return text;
-            return text.slice(0, maxLength - 3) + '...';
+            return text.slice(0, maxLength - 3) + "...";
         };
 
         // Add labels with truncation
         arcs.append("text")
             .append("textPath")
             .attr("xlink:href", (d, i) => `#label-path-${i}`)
-            .attr("startOffset", (d, i) => i === 0 ? "5%" : "45%")
+            .attr("startOffset", (d, i) => (i === 0 ? "5%" : "45%"))
             .text((d) => truncateText(d.data.label, 25)) // Adjust 25 to control max length
-            .style("text-anchor", (d, i) => i === 0 ? "start" : "end")
+            .style("text-anchor", (d, i) => (i === 0 ? "start" : "end"))
             .style("font-family", "'Roboto', sans-serif")
             .style("font-size", "1.1em")
             .style("fill", "black")
@@ -403,7 +401,7 @@ export function Dashboard() {
                 if (selectedPoll) {
                     // Clear any existing report content before transitioning
                     setReportContent(null);
-                    
+
                     setIsFadingOut(true);
                     fadeTimeoutRef.current = setTimeout(() => {
                         setShowRightColumnContent(false);
@@ -476,83 +474,6 @@ export function Dashboard() {
         }
     };
 
-    const formatText = (text: string) => {
-        const lines = text.split("\n");
-        let formattedLines = [];
-
-        for (let line of lines) {
-            if (line.startsWith("**") && line.endsWith("**")) {
-                formattedLines.push({
-                    text: line.slice(2, -2),
-                    isBold: true,
-                    isBullet: false,
-                });
-            } else if (line.startsWith("* ")) {
-                formattedLines.push({
-                    text: line.slice(2),
-                    isBold: false,
-                    isBullet: true,
-                });
-            } else {
-                formattedLines.push({
-                    text: line.replace(/\*/g, ""),
-                    isBold: false,
-                    isBullet: false,
-                });
-            }
-        }
-
-        return formattedLines;
-    };
-
-    const buildPDF = (text: string) => {
-        const pdf = new jsPDF("p", "mm", "a4");
-        const editedText =
-            text +
-            "\n\n\n----------\nThis report was created by an artificial intelligence language model. While we strive for accuracy and quality, please note that the information and calculations provided may not be entirely error-free or up-to-date. We recommend independently verifying the content and consulting with professionals for specific advice or information. We do not assume any responsibility or liability for the use or interpretation of this content.\n\n- SnapInput";
-        pdf.setFont("Courier");
-        pdf.setFontSize(11);
-        pdf.setTextColor("#000000");
-
-        const formattedLines = formatText(editedText);
-        const pageHeight = 247;
-        let y = 25;
-
-        for (let line of formattedLines) {
-            if (line.isBold) {
-                pdf.setFont("Courier", "bold");
-                pdf.setFontSize(13);
-            } else {
-                pdf.setFont("Courier", "normal");
-                pdf.setFontSize(11);
-            }
-
-            let splitLine = pdf.splitTextToSize(line.text, 180);
-
-            for (let part of splitLine) {
-                if (y > pageHeight) {
-                    y = 15;
-                    pdf.addPage();
-                }
-
-                if (line.isBullet) {
-                    pdf.circle(12, y - 2, 0.5, "F");
-                    pdf.text(part, 15, y);
-                } else {
-                    pdf.text(part, line.isBullet ? 15 : 10, y);
-                }
-
-                y += 7;
-            }
-
-            if (line.isBold) {
-                y += 3;
-            }
-        }
-
-        return pdf.output("dataurlstring");
-    };
-
     const showReportModal = (title: string, content: string) => {
         console.log("Showing report modal:", title, content);
     };
@@ -560,15 +481,6 @@ export function Dashboard() {
     const copyReportToClipboard = async () => {
         // Implement clipboard copy logic here
         console.log("Copying report to clipboard:", reportContent);
-    };
-
-    const downloadReportPDF = async () => {
-        if (!reportContent) return; // Add null check
-        const doc = buildPDF(reportContent);
-        const link = document.createElement("a");
-        link.href = doc;
-        link.download = pdfFileName;
-        link.click();
     };
 
     // Modify the reset search handler

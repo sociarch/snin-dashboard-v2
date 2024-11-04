@@ -13,6 +13,14 @@ const nextConfig = {
         // Add any necessary webpack configurations
         return config;
     },
+    // Add these domains to the list of allowed domains for scripts
+    scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "https://www.googletagmanager.com",
+        "https://www.clarity.ms",
+    ],
 };
 
 module.exports = nextConfig;

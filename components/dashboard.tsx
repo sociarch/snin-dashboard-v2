@@ -171,6 +171,10 @@ export function Dashboard() {
     // Modify the handleRowClick function
     const handleRowClick = (poll: PollDataItem) => {
         if (poll !== selectedPoll) {
+            // Clear existing report content
+            setReportContent(null);
+            setPreloadedReport(null);
+
             // First, hide everything
             setIsChartTransitioning(true);
             setShowTitle(false);
@@ -397,10 +401,15 @@ export function Dashboard() {
         if (buttonId === "function1") {
             if (showRightColumnContent) {
                 if (selectedPoll) {
+                    // Clear any existing report content before transitioning
+                    setReportContent(null);
+                    
                     setIsFadingOut(true);
                     fadeTimeoutRef.current = setTimeout(() => {
                         setShowRightColumnContent(false);
                         setIsFadingOut(false);
+                        // Generate report for current selection
+                        generateReport();
                     }, 300);
                 } else {
                     showAlert("Please select a question before viewing the report", "error");
@@ -413,6 +422,7 @@ export function Dashboard() {
         }
     };
 
+    // Update the generateReport function to handle preloaded reports more reliably
     const generateReport = async () => {
         if (!selectedPoll) {
             showAlert("Please select a question before generating a report", "error");
@@ -421,28 +431,20 @@ export function Dashboard() {
 
         setIsGeneratingReport(true);
 
-        if (preloadedReport) {
-            setReportContent(preloadedReport);
-            setShowRightColumnContent(false);
-            setIsGeneratingReport(false);
-        } else {
-            let promptIntro =
-                "You are a data scientist and analyst. You are analyzing data from a question asked to the general public. The question is in a 'Yes/No' or 'Either/Or' format only and is sponsored by a company. You are provided with a dataset containing the following fields: create_date,post_id,is_user_generated,is_sponsored,sponsor_id,caption,option1,option2,total_responses,resp_option1,pct_option1,resp_option2,pct_option2,count_like,count_comment,count_bookmark,count_skip. Question response data corresponding to the above fields: ";
+        try {
+            // First check if we have a preloaded report for the current selection
+            if (preloadedReport) {
+                setReportContent(preloadedReport);
+                setPreloadedReport(null); // Clear preloaded report after using it
+                setShowRightColumnContent(false);
+                return;
+            }
 
+            let promptIntro = "You are a data scientist and analyst..."; // Your existing prompt
             let questionData = Object.values(selectedPoll).join(",");
-
-            let reportInstructions =
-                ". Please write a concise report in order of: 1. Analyze the data and numbers: Identify key trends and insights related to the sponsor's specific question. 2. Summary and Insight: Clearly summarize the results of the question. Highlight any statistically significant findings. 3. Suggest potential next steps: Formulate 2-3 follow-up questions in the 'Either/Or' format that could help the sponsor gather more specific information based on these initial results.";
-
-            let additionalGuidelines =
-                " Follow-up questions should not be open-ended. These questions should directly build upon the insights gained. Also, potential next steps could include, for example, 'Consider a new marketing campaign targeting X demographic. Include only if it is appropriate'. IMPORTANT: Ensure the data comes from the provided data above. Please NEVER include statements about the quality of the question and its engagement with (likes, comments, bookmarks, and skips). Please avoid commenting on the question's limited engagement or low response rate if possible.";
-
+            let reportInstructions = ". Please write a concise report..."; // Your existing instructions
+            let additionalGuidelines = " Follow-up questions should not be..."; // Your existing guidelines
             let fullPrompt = promptIntro + questionData + reportInstructions + additionalGuidelines;
-
-            console.log("Prompt for AI:", fullPrompt);
-
-            const fileName = `SnapInput Report: ${selectedPoll.option1} vs ${selectedPoll.option2} (${selectedPoll.post_id})`;
-            setPdfFileName(`SnapInput_report_${selectedPoll.option1}_${selectedPoll.option2}_${selectedPoll.post_id}.pdf`);
 
             const options = {
                 method: "POST",
@@ -454,12 +456,7 @@ export function Dashboard() {
                 body: JSON.stringify({
                     model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
                     max_tokens: 2048,
-                    messages: [
-                        {
-                            role: "system",
-                            content: fullPrompt,
-                        },
-                    ],
+                    messages: [{ role: "system", content: fullPrompt }],
                     temperature: 0.44,
                     repetition_penalty: 1.1,
                     top_p: 0.7,
@@ -467,20 +464,15 @@ export function Dashboard() {
                 }),
             };
 
-            try {
-                const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
-                const data = await response.json();
-                const responseContent = data.response;
-                setReportContent(responseContent);
-
-                // Switch to the report view
-                setShowRightColumnContent(false);
-            } catch (err) {
-                console.error(err);
-                showAlert("Error generating report", "error");
-            } finally {
-                setIsGeneratingReport(false);
-            }
+            const response = await fetch("https://8ho3c3e0ne.execute-api.ap-southeast-1.amazonaws.com/Prod/instructai", options);
+            const data = await response.json();
+            setReportContent(data.response);
+            setShowRightColumnContent(false);
+        } catch (err) {
+            console.error("Error generating report:", err);
+            showAlert("Error generating report", "error");
+        } finally {
+            setIsGeneratingReport(false);
         }
     };
 

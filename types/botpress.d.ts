@@ -7,9 +7,16 @@ interface BotpressWebChat {
   }) => void;
 }
 
+interface BotpressInstance {
+  on: (event: string, callback: (data: any) => void) => void;
+  sendEvent: (event: any) => void;
+  updateUser: (data: any) => void;
+}
+
 declare global {
   interface Window {
     botpressWebChat?: BotpressWebChat;
+    botpress?: BotpressInstance;
   }
 }
 

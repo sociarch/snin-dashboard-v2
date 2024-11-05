@@ -17,6 +17,9 @@ import { BotpressEmbed } from "@/components/BotpressEmbed";
 // Add this type declaration at the top of your file
 declare global {
     interface Window {
+        botpressWebChat?: {
+            init: (config: { clientId: string; hostUrl: string; messagingUrl: string; botId: string }) => void;
+        };
         botpress?: {
             on: (event: string, callback: (data: any) => void) => void;
             sendEvent: (event: any) => void;

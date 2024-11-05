@@ -1,26 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
-    swcMinify: true,
-    output: "standalone",
-    // Add proper asset prefix if needed
-    assetPrefix: process.env.NODE_ENV === "production" ? undefined : undefined,
-    // Enable static file serving through next/static
+    images: {
+        domains: ['localhost'],
+    },
     experimental: {
-        appDir: true,
+        // Remove appDir since it's now default in Next.js 13+
     },
-    webpack: (config, { isServer }) => {
-        // Add any necessary webpack configurations
-        return config;
-    },
-    // Add these domains to the list of allowed domains for scripts
-    scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "'unsafe-eval'",
-        "https://www.googletagmanager.com",
-        "https://www.clarity.ms",
-    ],
-};
+    // Remove swcMinify as it's now default
+    // Remove scriptSrc if not needed
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

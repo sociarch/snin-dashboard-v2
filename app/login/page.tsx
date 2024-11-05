@@ -47,17 +47,17 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex h-screen bg-gray-900">
+        <div className="flex h-screen bg-[#0a0d16]">
             <div className="w-full flex justify-center items-center p-8">
-                <div className="w-full max-w-md bg-gray-800 rounded-lg shadow-lg p-8">
-                    <h2 className="text-3xl font-bold mb-6 text-white">
+                <div className="w-full max-w-md bg-[#1a1f2e] rounded-lg shadow-lg p-8 flex flex-col">
+                    <h2 className="text-4xl font-serif mb-8 text-white">
                         {isNewPasswordRequired ? "Set New Password" : "Sign In"}
                     </h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-6 flex-grow">
                         {!isNewPasswordRequired ? (
                             <>
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium mb-1">
+                                    <label htmlFor="email" className="block text-base text-white mb-2">
                                         Email
                                     </label>
                                     <Input
@@ -66,11 +66,11 @@ export default function LoginPage() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        className="w-full bg-gray-800 border-gray-700 text-white"
+                                        className="w-full bg-transparent border-gray-600 text-white h-12"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="password" className="block text-sm font-medium mb-1">
+                                    <label htmlFor="password" className="block text-base text-white mb-2">
                                         Password
                                     </label>
                                     <Input
@@ -79,13 +79,13 @@ export default function LoginPage() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        className="w-full bg-gray-800 border-gray-700 text-white"
+                                        className="w-full bg-transparent border-gray-600 text-white h-12"
                                     />
                                 </div>
                             </>
                         ) : (
                             <div>
-                                <label htmlFor="newPassword" className="block text-sm font-medium mb-1">
+                                <label htmlFor="newPassword" className="block text-base text-white mb-2">
                                     New Password
                                 </label>
                                 <Input
@@ -94,16 +94,27 @@ export default function LoginPage() {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
-                                    className="w-full bg-gray-800 border-gray-700 text-white"
+                                    className="w-full bg-transparent border-gray-600 text-white h-12"
                                     placeholder="Enter your new password"
                                 />
                             </div>
                         )}
-                        <Button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 text-black">
+                        <Button 
+                            type="submit" 
+                            className="w-full bg-[#ffd700] hover:bg-[#e6c200] text-black h-12 text-lg font-medium rounded-md"
+                        >
                             {isNewPasswordRequired ? "Set New Password" : "Sign In"}
                         </Button>
                     </form>
                     {error && <p className="mt-4 text-red-500">{error}</p>}
+                    
+                    {/* Logo at bottom */}
+                    <div className="mt-8">
+                        <h1 className="text-xl font-bold">
+                            <span className="text-[#ffd700]">Snap</span>
+                            <span className="text-white">Input</span>
+                        </h1>
+                    </div>
                 </div>
             </div>
         </div>

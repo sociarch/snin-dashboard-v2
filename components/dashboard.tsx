@@ -8,25 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import * as d3 from "d3";
 import { LogOut, X } from "lucide-react";
-import { useRouter } from "next/navigation"; // Add this import at the top
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { fetchPollData } from "./fetchPollData";
 import { PollDataItem } from "./pollData";
 import { BotpressEmbed } from "@/components/BotpressEmbed";
-
-// Add this type declaration at the top of your file
-declare global {
-    interface Window {
-        botpressWebChat?: {
-            init: (config: { clientId: string; hostUrl: string; messagingUrl: string; botId: string }) => void;
-        };
-        botpress?: {
-            on: (event: string, callback: (data: any) => void) => void;
-            sendEvent: (event: any) => void;
-            updateUser: (data: any) => void;
-        };
-    }
-}
 
 // Add this near the top of your component, with other function declarations
 const generateReport = () => {
@@ -51,7 +37,7 @@ const calculateFontSize = (text: string) => {
 };
 
 export function Dashboard() {
-    const router = useRouter(); // Add this near other hooks
+    const router = useRouter();
     const { signOut, remainingQuestions, userAttributes, userGroups } = useAuth();
     const botpressListenersAdded = useRef(false);
     const latestUserAttributes = useRef(userAttributes);
@@ -484,13 +470,13 @@ export function Dashboard() {
     const addBotpressEventListeners = () => {
         if (!window.botpress || botpressListenersAdded.current) return;
 
-        const botpressReady = new Promise((resolve) => {
+        const botpressReady = new Promise<boolean>((resolve) => {
             window.botpress?.on("webchat:ready", () => {
                 resolve(true);
             });
         });
 
-        window.botpress.on("webchat:opened", async (conversationId) => {
+        window.botpress.on("webchat:opened", async (conversationId: string) => {
             try {
                 await botpressReady;
 
@@ -520,7 +506,7 @@ export function Dashboard() {
         window.botpress.on("conversation", () => {});
         window.botpress.on("message", () => {});
         window.botpress.on("messageSent", () => {});
-        window.botpress.on("error", (error) => {
+        window.botpress.on("error", (error: Error) => {
             console.error(`Botpress Error:`, error);
         });
 

@@ -7,8 +7,21 @@ interface BotpressWebChat {
   }) => void;
 }
 
+type BotpressEventMap = {
+  "webchat:ready": void;
+  "webchat:opened": string;
+  "webchat:closed": void;
+  "conversation": unknown;
+  "message": unknown;
+  "messageSent": unknown;
+  "error": Error;
+}
+
 interface BotpressInstance {
-  on: (event: string, callback: (data: any) => void) => void;
+  on: <T extends keyof BotpressEventMap>(
+    event: T, 
+    callback: (data: BotpressEventMap[T]) => void
+  ) => void;
   sendEvent: (event: any) => void;
   updateUser: (data: any) => void;
 }

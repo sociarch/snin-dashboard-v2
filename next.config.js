@@ -1,13 +1,27 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['localhost'],
+        domains: ['www.clarity.ms'],
     },
-    experimental: {
-        // Remove appDir since it's now default in Next.js 13+
+    output: 'standalone',
+    poweredByHeader: false,
+    reactStrictMode: true,
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
+                ],
+            },
+        ];
     },
-    // Remove swcMinify as it's now default
-    // Remove scriptSrc if not needed
+    webpack: (config, { isServer }) => {
+        return config;
+    },
 }
 
 module.exports = nextConfig

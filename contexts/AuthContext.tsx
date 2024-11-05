@@ -92,6 +92,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     console.error("Login error:", err);
                     reject(err);
                 },
+                newPasswordRequired: (userAttributes, requiredAttributes) => {
+                    // Pass an empty object instead of trying to clean the attributes
+                    cognitoUser.completeNewPasswordChallenge(password, {}, {
+                        onSuccess: (result) => {
+                            setIsAuthenticated(true);
+                            setUser(cognitoUser);
+                            fetchUserAttributes(cognitoUser);
+                            resolve();
+                        },
+                        onFailure: (err) => {
+                            console.error("Error completing new password challenge:", err);
+                            reject(err);
+                        }
+                    });
+                }
             });
         });
     };

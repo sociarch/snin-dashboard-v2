@@ -690,7 +690,11 @@ export function Dashboard() {
                                                         <TableRow
                                                             key={poll.post_id}
                                                             onClick={() => handleRowClick(poll)}
-                                                            className="cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                            className={`cursor-pointer transition-colors ${
+                                                                selectedPoll?.post_id === poll.post_id 
+                                                                    ? "bg-gray-100 dark:bg-gray-800" 
+                                                                    : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                            }`}
                                                         >
                                                             <TableCell>{poll.caption}</TableCell>
                                                             <TableCell>

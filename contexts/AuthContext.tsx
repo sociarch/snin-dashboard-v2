@@ -20,6 +20,7 @@ export interface AuthContextType {
     forgotPasswordSubmit: (username: string, code: string, newPassword: string) => Promise<void>;
     updateUserAttributes: (attributes: Record<string, string>) => Promise<void>;
     loading: boolean;
+    completeNewPassword: (newPassword: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [remainingQuestions, setRemainingQuestions] = useState<number | null>(null);
     const [userAttributes, setUserAttributes] = useState<{ [key: string]: string } | null>(null);
     const [userGroups, setUserGroups] = useState<string[]>([]);
+    const [tempUser, setTempUser] = useState<CognitoUser | null>(null);
 
     useEffect(() => {
         const currentUser = userPool.getCurrentUser();
@@ -93,19 +95,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     reject(err);
                 },
                 newPasswordRequired: (userAttributes, requiredAttributes) => {
-                    // Pass an empty object instead of trying to clean the attributes
-                    cognitoUser.completeNewPasswordChallenge(password, {}, {
-                        onSuccess: (result) => {
-                            setIsAuthenticated(true);
-                            setUser(cognitoUser);
-                            fetchUserAttributes(cognitoUser);
-                            resolve();
-                        },
-                        onFailure: (err) => {
-                            console.error("Error completing new password challenge:", err);
-                            reject(err);
-                        }
-                    });
+                    // Store the cognitoUser temporarily
+                    setTempUser(cognitoUser);
+                    // Reject with specific error to handle in UI
+                    reject(new Error('NEW_PASSWORD_REQUIRED'));
+                }
+            });
+        });
+    };
+
+    const completeNewPassword = async (newPassword: string): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            if (!tempUser) {
+                reject(new Error('No temporary user found'));
+                return;
+            }
+
+            tempUser.completeNewPasswordChallenge(newPassword, {}, {
+                onSuccess: (result) => {
+                    setIsAuthenticated(true);
+                    setUser(tempUser);
+                    setTempUser(null);
+                    fetchUserAttributes(tempUser);
+                    resolve();
+                },
+                onFailure: (err) => {
+                    console.error("Error completing new password challenge:", err);
+                    reject(err);
                 }
             });
         });
@@ -174,7 +190,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         forgotPassword: async () => {},
         forgotPasswordSubmit: async () => {},
         updateUserAttributes: async () => {},
-        loading: false
+        loading: false,
+        completeNewPassword,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

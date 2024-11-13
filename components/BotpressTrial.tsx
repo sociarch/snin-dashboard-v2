@@ -28,12 +28,21 @@ export function BotpressTrial() {
             botId: "9d976cb1-0613-4241-aa63-3df728abf383",
         });
 
+        // Add event listener for webchat:opened
+        window.addEventListener('webchat:opened', () => {
+            console.log('hello!');
+        });
+
         botpressInitialized.current = true;
 
         // Cleanup
         return () => {
             document.body.removeChild(injectScript);
             document.body.removeChild(customScript);
+            // Remove event listener on cleanup
+            window.removeEventListener('webchat:opened', () => {
+                console.log('hello!');
+            });
         };
     }, []);
 

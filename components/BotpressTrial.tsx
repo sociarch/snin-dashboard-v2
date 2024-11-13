@@ -28,9 +28,33 @@ export function BotpressTrial() {
             botId: "9d976cb1-0613-4241-aa63-3df728abf383",
         });
 
-        // Add event listener for webchat:opened
-        window.addEventListener('webchat:opened', () => {
-            console.log('hello!');
+        const botpressReady = new Promise<boolean>((resolve) => {
+            window.botpress?.on("webchat:ready", () => {
+                resolve(true);
+            });
+        });
+
+        window.botpress.on("webchat:opened", async (conversationId: string) => {
+            try {
+                await botpressReady;
+
+                if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
+                    throw new Error("Botpress methods not available");
+                }
+
+                const source = new URLSearchParams(window.location.search).get("source") || "";
+
+                await window.botpress.updateUser({
+                    data: {
+                        // Spread the source parameter if it exists in the URL query
+                        ...(source && { source: source }),
+                        // Add timestamp of when the chat was opened
+                        time_sent: new Date().toISOString(),
+                    },
+                });
+            } catch (error) {
+                console.error("Error initializing Botpress chat:", error);
+            }
         });
 
         botpressInitialized.current = true;
@@ -40,8 +64,8 @@ export function BotpressTrial() {
             document.body.removeChild(injectScript);
             document.body.removeChild(customScript);
             // Remove event listener on cleanup
-            window.removeEventListener('webchat:opened', () => {
-                console.log('hello!');
+            window.removeEventListener("webchat:opened", () => {
+                console.log("hello!");
             });
         };
     }, []);
@@ -67,16 +91,12 @@ export function BotpressTrial() {
                         <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
                             You don&apos;t need to be a fortune teller to understand your market
                         </h1>
-                        <p className="text-xl text-gray-600">
-                            You just need SnapInput - questions worth asking.
-                        </p>
+                        <p className="text-xl text-gray-600">You just need SnapInput - questions worth asking.</p>
                     </div>
 
                     {/* Trial Section */}
                     <div className="bg-[#FFD700] rounded-lg p-8 text-center">
-                        <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-900">
-                            👋 Hi! I&apos;m your AI Assistant
-                        </h2>
+                        <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-900">👋 Hi! I&apos;m your AI Assistant</h2>
                         <p className="text-lg text-gray-800">
                             Click the chat icon in the bottom right corner to learn how SnapInput can help you understand your customers better.
                         </p>

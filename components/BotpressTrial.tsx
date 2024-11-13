@@ -34,28 +34,31 @@ export function BotpressTrial() {
             });
         });
 
-        window.botpress.on("webchat:opened", async (conversationId: string) => {
-            try {
-                await botpressReady;
+        // Add type guard check for window.botpress
+        if (window.botpress) {
+            window.botpress.on("webchat:opened", async (conversationId: string) => {
+                try {
+                    await botpressReady;
 
-                if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
-                    throw new Error("Botpress methods not available");
+                    if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
+                        throw new Error("Botpress methods not available");
+                    }
+
+                    const source = new URLSearchParams(window.location.search).get("source") || "";
+
+                    await window.botpress.updateUser({
+                        data: {
+                            // Spread the source parameter if it exists in the URL query
+                            ...(source && { source: source }),
+                            // Add timestamp of when the chat was opened
+                            time_sent: new Date().toISOString(),
+                        },
+                    });
+                } catch (error) {
+                    console.error("Error initializing Botpress chat:", error);
                 }
-
-                const source = new URLSearchParams(window.location.search).get("source") || "";
-
-                await window.botpress.updateUser({
-                    data: {
-                        // Spread the source parameter if it exists in the URL query
-                        ...(source && { source: source }),
-                        // Add timestamp of when the chat was opened
-                        time_sent: new Date().toISOString(),
-                    },
-                });
-            } catch (error) {
-                console.error("Error initializing Botpress chat:", error);
-            }
-        });
+            });
+        }
 
         botpressInitialized.current = true;
 

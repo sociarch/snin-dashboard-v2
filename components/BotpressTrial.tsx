@@ -1,78 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { BotpressTrialEmbed } from "./BotpressTrialEmbed";
 
 export function BotpressTrial() {
-    const botpressInitialized = useRef(false);
-
-    useEffect(() => {
-        if (botpressInitialized.current) return;
-
-        // Load Botpress inject script
-        const injectScript = document.createElement("script");
-        injectScript.src = "https://cdn.botpress.cloud/webchat/v2.2/inject.js";
-        document.body.appendChild(injectScript);
-
-        // Load custom script
-        const customScript = document.createElement("script");
-        customScript.src = "https://files.bpcontent.cloud/2024/10/21/06/20241021062910-6QRSUQCY.js";
-        document.body.appendChild(customScript);
-
-        // Initialize Botpress
-        window.botpressWebChat?.init({
-            clientId: "9d976cb1-0613-4241-aa63-3df728abf383",
-            hostUrl: "https://cdn.botpress.cloud/webchat/v2.2",
-            messagingUrl: "https://messaging.botpress.cloud",
-            botId: "9d976cb1-0613-4241-aa63-3df728abf383",
-        });
-
-        const botpressReady = new Promise<boolean>((resolve) => {
-            window.botpress?.on("webchat:ready", () => {
-                resolve(true);
-            });
-        });
-
-        // Add type guard check for window.botpress
-        if (window.botpress) {
-            window.botpress.on("webchat:opened", async (conversationId: string) => {
-                try {
-                    await botpressReady;
-
-                    if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
-                        throw new Error("Botpress methods not available");
-                    }
-
-                    const source = new URLSearchParams(window.location.search).get("source") || "";
-
-                    await window.botpress.updateUser({
-                        data: {
-                            // Spread the source parameter if it exists in the URL query
-                            ...(source && { source: source }),
-                            // Add timestamp of when the chat was opened
-                            time_sent: new Date().toISOString(),
-                        },
-                    });
-                } catch (error) {
-                    console.error("Error initializing Botpress chat:", error);
-                }
-            });
-        }
-
-        botpressInitialized.current = true;
-
-        // Cleanup
-        return () => {
-            document.body.removeChild(injectScript);
-            document.body.removeChild(customScript);
-            // Remove event listener on cleanup
-            window.removeEventListener("webchat:opened", () => {
-                console.log("hello!");
-            });
-        };
-    }, []);
-
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-white relative">
             {/* Back Button */}
@@ -106,6 +38,9 @@ export function BotpressTrial() {
                     </div>
                 </div>
             </main>
+
+            {/* Botpress Webchat */}
+            <BotpressTrialEmbed />
         </div>
     );
 }

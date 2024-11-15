@@ -24,6 +24,12 @@ interface BotpressInstance {
   ) => void;
   sendEvent: (event: any) => void;
   updateUser: (data: any) => void;
+  open: () => void;
+  close: () => void;
+  isOpen: () => boolean;
+  onOpen: (callback: () => void) => void;
+  onClose: (callback: () => void) => void;
+  off: (event: 'open' | 'close') => void;
 }
 
 declare global {

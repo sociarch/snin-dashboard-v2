@@ -106,36 +106,26 @@ export function BotpressTrialEmbed() {
 
     return (
         <>
-            <Script id="botpress-inject" strategy="afterInteractive">
-                {`
-                    (function() {
-                        var script = document.createElement('script');
-                        script.src = "https://cdn.botpress.cloud/webchat/v2.2/inject.js";
-                        script.async = true;
-                        script.onload = function() {
-                            if (process.env.NODE_ENV === "development") {
-                                console.log("Botpress inject.js loaded");
-                            }
-                        };
-                        document.head.appendChild(script);
-                    })();
-                `}
-            </Script>
-            <Script id="botpress-config" strategy="afterInteractive">
-                {`
-                    (function() {
-                        var script = document.createElement('script');
-                        script.src = "https://files.bpcontent.cloud/2024/10/21/06/20241021062910-6QRSUQCY.js";
-                        script.async = true;
-                        script.onload = function() {
-                            if (process.env.NODE_ENV === "development") {
-                                console.log("Botpress config script loaded");
-                            }
-                        };
-                        document.head.appendChild(script);
-                    })();
-                `}
-            </Script>
+            <Script 
+                id="botpress-inject"
+                src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"
+                strategy="lazyOnload"
+                onLoad={() => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log("Botpress inject.js loaded");
+                    }
+                }}
+            />
+            <Script
+                id="botpress-config"
+                src="https://files.bpcontent.cloud/2024/10/21/06/20241021062910-6QRSUQCY.js"
+                strategy="lazyOnload"
+                onLoad={() => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log("Botpress config script loaded");
+                    }
+                }}
+            />
         </>
     );
 }

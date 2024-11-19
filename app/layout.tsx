@@ -1,5 +1,5 @@
+import '../polyfills'
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import './globals.css'
 import { Libre_Baskerville, Roboto } from 'next/font/google'
 import { ThemeProvider } from "@/components/theme-provider"
@@ -31,26 +31,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${libreBaskerville.variable} ${roboto.variable}`} suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Google Tag Manager */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-PXZXKPL9');`,
-          }}
-        />
-        {/* End Google Tag Manager */}
-      </head>
-      <body className={libreBaskerville.className}>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={`${libreBaskerville.variable} ${roboto.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
+          disableTransitionOnChange
         >
           <ClientLayout>
             {children}
@@ -59,5 +47,5 @@ export default function RootLayout({
         <Analytics />
       </body>
     </html>
-  )
+  );
 }

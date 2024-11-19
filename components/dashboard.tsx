@@ -476,30 +476,37 @@ export function Dashboard() {
             });
         });
 
-        window.botpress.on("webchat:opened", async (conversationId: string) => {
-            try {
-                await botpressReady;
-
-                if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
-                    throw new Error("Botpress methods not available");
-                }
-
-                if (!latestUserAttributes.current) {
-                    throw new Error("User attributes not available");
-                }
-
-                await window.botpress.updateUser({
-                    data: {
-                        email: latestUserAttributes.current.email || "",
-                        usr: latestUserAttributes.current.email || "",
-                        zipnum: latestUserAttributes.current["custom:zipnum"] || "",
-                        qs_remain: latestUserAttributes.current["custom:qs_remain"] || "",
-                        time_sent: new Date().toISOString(),
-                    },
-                });
-            } catch (error) {
-                console.error("Error initializing Botpress chat:", error);
+        window.botpress.on("webchat:opened", (conversationId?: string) => {
+            if (process.env.NODE_ENV === "development") {
+                console.log("Webchat opened with conversation ID:", conversationId);
             }
+
+            // Handle the async operations
+            void (async () => {
+                try {
+                    await botpressReady;
+
+                    if (!window.botpress?.updateUser || !window.botpress?.sendEvent) {
+                        throw new Error("Botpress methods not available");
+                    }
+
+                    if (!latestUserAttributes.current) {
+                        throw new Error("User attributes not available");
+                    }
+
+                    await window.botpress.updateUser({
+                        data: {
+                            email: latestUserAttributes.current.email || "",
+                            usr: latestUserAttributes.current.email || "",
+                            zipnum: latestUserAttributes.current["custom:zipnum"] || "",
+                            qs_remain: latestUserAttributes.current["custom:qs_remain"] || "",
+                            time_sent: new Date().toISOString(),
+                        },
+                    });
+                } catch (error) {
+                    console.error("Error in webchat:opened handler:", error);
+                }
+            })();
         });
 
         window.botpress.on("webchat:closed", () => {});
@@ -691,8 +698,8 @@ export function Dashboard() {
                                                             key={poll.post_id}
                                                             onClick={() => handleRowClick(poll)}
                                                             className={`cursor-pointer transition-colors ${
-                                                                selectedPoll?.post_id === poll.post_id 
-                                                                    ? "bg-gray-100 dark:bg-gray-800" 
+                                                                selectedPoll?.post_id === poll.post_id
+                                                                    ? "bg-gray-100 dark:bg-gray-800"
                                                                     : "hover:bg-gray-50 dark:hover:bg-gray-800"
                                                             }`}
                                                         >

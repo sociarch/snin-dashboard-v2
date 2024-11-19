@@ -316,7 +316,7 @@ export function Dashboard() {
             .attr("startOffset", (d, i) => (i === 0 ? "5%" : "45%"))
             .text((d) => truncateText(d.data.label, 25)) // Adjust 25 to control max length
             .style("text-anchor", (d, i) => (i === 0 ? "start" : "end"))
-            .style("font-family", "'Roboto', sans-serif")
+            .style("font-family", "var(--font-roboto)")
             .style("font-size", "1.1em")
             .style("fill", "black")
             .style("opacity", 0)
@@ -570,7 +570,7 @@ export function Dashboard() {
     }, []);
 
     return (
-        <div id="dashboard-container" className="flex flex-col h-screen">
+        <div id="dashboard-container" className="flex flex-col h-screen font-serif">
             <header id="dashboard-header" className="flex-none p-4 flex justify-between items-center">
                 <div className="flex items-center">
                     <h1 id="dashboard-title" className="text-xl font-semibold">
@@ -612,14 +612,14 @@ export function Dashboard() {
                                             <td
                                                 id="option1-percentage"
                                                 className="w-1/2 text-left font-['Roboto'] text-[2em] font-bold"
-                                                style={{ color: "#ffd700", fontFamily: "var(--font-roboto)" }}
+                                                style={{ color: "#ffd700" }}
                                             >
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option1) * 100).toFixed(0)}%` : ""}
                                             </td>
                                             <td
                                                 id="option2-percentage"
                                                 className="w-1/2 text-right font-['Roboto'] text-[2em] font-bold"
-                                                style={{ color: "#FA8072", fontFamily: "var(--font-roboto)" }}
+                                                style={{ color: "#FA8072" }}
                                             >
                                                 {selectedPoll ? `${(parseFloat(selectedPoll.pct_option2) * 100).toFixed(0)}%` : ""}
                                             </td>

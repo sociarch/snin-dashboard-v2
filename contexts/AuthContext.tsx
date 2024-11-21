@@ -4,6 +4,7 @@ import { userPool } from "@/lib/awsConfig";
 import { AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from 'axios';
+import { useRouter } from "next/navigation";
 
 export interface AuthContextType {
     signOut: () => Promise<void>;
@@ -26,6 +27,7 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<CognitoUser | null>(null);
     const [remainingQuestions, setRemainingQuestions] = useState<number | null>(null);
@@ -97,6 +99,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 newPasswordRequired: (userAttributes, requiredAttributes) => {
                     // Store the cognitoUser temporarily
                     setTempUser(cognitoUser);
+                    // Redirect to the new password page
+                    router.push("/new-password");
                     // Reject with specific error to handle in UI
                     reject(new Error('NEW_PASSWORD_REQUIRED'));
                 }
